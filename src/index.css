@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-slate-900 font-hindi;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Accessible focus outline */
+*:focus-visible {
+  outline: 3px solid #ea580c !important;
+  outline-offset: 2px !important;
+}
+
+/* Custom Govt card styles */
+.gov-card {
+  @apply bg-white border-2 border-slate-200 shadow-sm hover:border-gov-navy transition-all duration-150;
+}
+
+.gov-card-active {
+  @apply bg-blue-50/70 border-2 border-gov-navy shadow-md ring-2 ring-gov-navy/20;
+}
+
+.gov-btn-primary {
+  @apply bg-gov-navy hover:bg-gov-navydark text-white font-bold py-3.5 px-6 text-lg flex items-center justify-center gap-2 shadow hover:shadow-md transition-all active:scale-[0.99] min-h-[52px];
+}
+
+.gov-btn-secondary {
+  @apply bg-white hover:bg-slate-50 text-gov-navy border-2 border-gov-navy font-bold py-3 px-5 text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99] min-h-[52px];
+}
+
+.gov-btn-accent {
+  @apply bg-gov-saffron hover:bg-orange-700 text-white font-bold py-3.5 px-6 text-lg flex items-center justify-center gap-2 shadow transition-all active:scale-[0.99] min-h-[52px];
+}
+
+/* Formal government-portal surfaces use square edges; circular status markers remain circular. */
+.official-portal .rounded-lg,
+.official-portal .rounded-xl,
+.official-portal .rounded-2xl {
+  border-radius: 0;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+@media print {
+  header, footer, .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
