@@ -73,8 +73,30 @@ export default function AiAssistantModal({ onClose, onVoiceProfileReady, current
         const question = result.nextQuestion || (isHindi ? 'कृपया अपनी जरूरत के बारे में थोड़ा और बताइए।' : 'Please tell me a little more about what you need.');
         setVoiceState('waiting_for_answer'); speak(question);
       }
-    } catch {
-      setVoiceState('error'); setErrorMsg(isHindi ? 'जानकारी समझने में समस्या हुई। कृपया दोबारा बोलें या टाइप करें।' : 'We could not process those details. Please try again or type them.');
+    } catch (error) {
+      setVoiceState('error');
+      console.error('Chat error:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = isHindi 
+        ? 'जानकारी समझने में परेशानी हुई।'
+        : 'We could not process those details.';
+      
+      if (error.message.includes('offline') || error.message.includes('Network')) {
+        errorMessage = isHindi
+          ? 'इंटरनेट कनेक्शन की समस्या है। कृपया कनेक्शन चेक करें और दोबारा कोशिश करें।'
+          : 'Network connection issue. Please check your internet and try again.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = isHindi
+          ? 'सर्वर में देरी हो रही है। कृपया दोबारा कोशिश करें।'
+          : 'Server is taking too long. Please try again.';
+      } else if (error.message.includes('Backend')) {
+        errorMessage = isHindi
+          ? 'सेवा कुछ समय के लिए उपलब्ध नहीं है। कृपया दोबारा कोशिश करें।'
+          : 'Service is temporarily unavailable. Please try again.';
+      }
+      
+      setErrorMsg(errorMessage + ' ' + (isHindi ? 'कृपया दोबारा बोलें या टाइप करें।' : 'Please try again or type your details.'));
     }
   };
 

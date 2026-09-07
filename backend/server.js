@@ -13,14 +13,44 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
 
 // Endpoint to understand natural language or partial profile using Groq
 app.post('/api/analyze-user', async (req, res) => {
   try {
     const { query, currentProfile, language } = req.body;
+    
+    // Validate input
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      return res.status(400).json({ error: 'Query is required and must be non-empty' });
+    }
+    
+    if (!process.env.GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured in environment variables');
+      return res.status(503).json({ error: 'Service configuration error. Please try again later.' });
+    }
+    
     const profile = await userProfileService.analyzeProfile(query, currentProfile, language);
     res.json(profile);
   } catch (error) {
+    console.error('Profile analysis error:', error.message);
+    
+    // Specific error handling
+    if (error.message.includes('API key') || error.message.includes('authentication')) {
+      return res.status(503).json({ error: 'Service authentication failed. Please try again.' });
+    }
+    
+    if (error.message.includes('rate_limit')) {
+      return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
+    }
+    
+    if (error.message.includes('timeout') || error.message.includes('ECONNREFUSED')) {
+      return res.status(504).json({ error: 'Service timeout. Please try again.' });
+    }
+    
     res.status(500).json({ error: 'Failed to analyze user profile' });
   }
 });

@@ -63,7 +63,7 @@ export const TRANSLATIONS = {
     b_step3_subtitle: "Enter the total annual income of all earning family members.",
     b_step4_title: "What is your current business status?",
     b_step5_title: "How much financial assistance do you require?",
-    b_step6_title: "Select your gender",
+    b_step6_title: "Select your category",
 
     // Student Flow Questions
     s_step1_title: "What type of student support do you need?",
@@ -72,7 +72,7 @@ export const TRANSLATIONS = {
     s_step4_title: "In which state are you studying?",
     s_step5_title: "What is your total annual family income?",
     s_step6_title: "What is your social category?",
-    s_step7_title: "Select your gender",
+    s_step7_title: "Select your category",
 
     // Income Quick Picks
     less_than_1lakh: "Below ₹1 Lakh",

@@ -58,12 +58,14 @@ export default function BusinessFlow({
     { id: 'expansion', label: '📈 Want to expand my business', desc: 'New machinery, new branch, or working capital' }
   ];
 
-  // Gender Options
-  const GENDER_OPTIONS = isHindi ? [
-    { id: 'male', label: '👨 पुरुष' }, { id: 'female', label: '👩 महिला' }, { id: 'other', label: '⚧ अन्य' }
+  // Category Options
+  const CATEGORY_OPTIONS = isHindi ? [
+    { id: 'male', label: '👨 पुरुष' }, { id: 'female', label: '👩 महिला' }, { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' }, { id: 'pwd', label: '♿ दिव्यांगजन (PwD)' }, { id: 'other', label: '⚧ अन्य' }
   ] : [
     { id: 'male', label: '👨 Male' },
     { id: 'female', label: '👩 Female' },
+    { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' },
+    { id: 'pwd', label: '♿ Person with Disability (PwD)' },
     { id: 'other', label: '⚧ Other' }
   ];
 
@@ -129,7 +131,7 @@ export default function BusinessFlow({
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-5">
       {/* Top Step Progress Bar */}
       <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={handleBack}
             className="flex items-center gap-1.5 text-gov-navy font-extrabold text-base hover:underline"
@@ -272,7 +274,7 @@ export default function BusinessFlow({
             <label className="text-sm font-bold text-slate-800">
               {isHindi ? 'सटीक वार्षिक आय दर्ज करें (₹):' : 'Enter Exact Amount (₹):'}
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
@@ -288,7 +290,7 @@ export default function BusinessFlow({
                   if (customIncomeInput) handleSelectIncome(Number(customIncomeInput));
                 }}
                 disabled={!customIncomeInput}
-                className="gov-btn-primary px-6"
+                className="gov-btn-primary px-6 w-full sm:w-auto"
               >
                 {isHindi ? 'आगे बढ़ें' : 'Next'}
               </button>
@@ -366,7 +368,7 @@ export default function BusinessFlow({
             <label className="text-sm font-bold text-slate-800">
               {isHindi ? 'आवश्यक सटीक वित्तीय सहायता दर्ज करें (₹):' : 'Enter Exact Financial Need (₹):'}
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
@@ -382,7 +384,7 @@ export default function BusinessFlow({
                   if (customNeedInput) handleSelectFinancialNeed(Number(customNeedInput));
                 }}
                 disabled={!customNeedInput}
-                className="gov-btn-primary px-6"
+                className="gov-btn-primary px-6 w-full sm:w-auto"
               >
                 {isHindi ? 'आगे बढ़ें' : 'Next'}
               </button>
@@ -391,7 +393,7 @@ export default function BusinessFlow({
         </div>
       )}
 
-      {/* STEP 6: GENDER SELECTION */}
+      {/* STEP 6: CATEGORY SELECTION */}
       {step === 6 && (
         <div className="space-y-4 animate-in fade-in duration-200">
           <div className="space-y-1">
@@ -401,7 +403,7 @@ export default function BusinessFlow({
           </div>
 
           <div className="space-y-3">
-            {GENDER_OPTIONS.map((item) => (
+            {CATEGORY_OPTIONS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleSelectGender(item.id)}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Bot, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Header from './components/Header';
 import LocationModal from './components/LocationModal';
 import HomeScreen from './components/HomeScreen';
 import BusinessFlow from './components/BusinessFlow';
 import StudentFlow from './components/StudentFlow';
-import AiAssistantModal from './components/AiAssistantModal';
+import ChatBot from './components/ChatBot';
 import NoSchemesScreen from './components/NoSchemesScreen';
 import ResultsScreen from './components/ResultsScreen';
 import SchemeDetailScreen from './components/SchemeDetailScreen';
@@ -19,7 +19,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('home'); // home | business_flow | student_flow | results | detail | no_schemes
   const [currentLang, setCurrentLang] = useState('hi');
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
+  const [userLocation, setUserLocation] = useState({ state: 'Uttar Pradesh' });
 
   // User Selection Context
   const [userState, setUserState] = useState('Uttar Pradesh');
@@ -34,6 +34,7 @@ export default function App() {
   // Location Modal Handlers
   const handleLocationGranted = (locData) => {
     setUserState(locData.state);
+    setUserLocation(locData);
     if (locData.suggestedLang) {
       setCurrentLang(locData.suggestedLang);
     }
@@ -198,6 +199,7 @@ export default function App() {
           <SchemeDetailScreen
             scheme={selectedScheme}
             userCriteria={userCriteria}
+            userLocation={userLocation}
             onBack={() => setCurrentScreen('results')}
             currentLang={currentLang}
           />
@@ -220,16 +222,10 @@ export default function App() {
       </main>
 
       {/* Persistent help control */}
-      <div className="fixed bottom-6 right-6 z-40 no-print">
-        <button
-          onClick={() => setShowAiModal(true)}
-          className="group relative w-[58px] h-[58px] rounded-full bg-gov-navy hover:bg-gov-navydark text-white border-2 border-gov-saffron flex items-center justify-center transition-colors shadow-lg"
-          aria-label="Open SchemeSetu voice assistant"
-          title={t('card_ai_title')}
-        >
-          <Bot className="w-7 h-7" aria-hidden="true" />
-        </button>
-      </div>
+      <ChatBot 
+        currentLang={currentLang} 
+        onVoiceProfileReady={handleVoiceProfileReady}
+      />
 
       {/* Location Permission Modal */}
       {showLocationModal && (
@@ -237,15 +233,6 @@ export default function App() {
           currentLang={currentLang}
           onLocationGranted={handleLocationGranted}
           onLocationDenied={handleLocationDenied}
-        />
-      )}
-
-      {/* AI Assistant Modal */}
-      {showAiModal && (
-        <AiAssistantModal
-          currentLang={currentLang}
-          onClose={() => setShowAiModal(false)}
-          onVoiceProfileReady={handleVoiceProfileReady}
         />
       )}
 
@@ -301,25 +288,7 @@ export default function App() {
             </ul>
           </div>
 
-          {/* Column 4: Follow Us & Digital India */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-extrabold text-white uppercase tracking-wider border-l-3 border-gov-saffron pl-2">
-              {isHindi ? "हमें फॉलो करें" : "Follow Us"}
-            </h4>
-            <div className="flex items-center gap-2 text-lg">
-              <span className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold text-xs cursor-pointer hover:opacity-80">YT</span>
-              <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs cursor-pointer hover:opacity-80">FB</span>
-              <span className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs cursor-pointer hover:opacity-80">X</span>
-              <span className="w-8 h-8 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold text-xs cursor-pointer hover:opacity-80">IG</span>
-            </div>
 
-            <div className="pt-2">
-              <div className="inline-block bg-white/10 border border-white/20 p-2 rounded-xl text-center">
-                <span className="text-xs font-black text-amber-300">Digital India</span>
-                <div className="text-[10px] text-slate-300 font-medium">Power To Empower</div>
-              </div>
-            </div>
-          </div>
 
         </div>
 

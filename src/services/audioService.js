@@ -4,33 +4,81 @@
 
 let synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 let currentUtterance = null;
+let utteranceQueue = [];
+
+// Split text into chunks for long texts
+function splitTextIntoChunks(text, maxLength = 200) {
+  if (text.length <= maxLength) {
+    return [text];
+  }
+  
+  const chunks = [];
+  let currentChunk = '';
+  
+  // Split by sentences (periods, exclamation, question marks)
+  const sentences = text.split(/(?<=[।!?])\s+/);
+  
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence).length <= maxLength) {
+      currentChunk += (currentChunk ? ' ' : '') + sentence;
+    } else {
+      if (currentChunk) chunks.push(currentChunk);
+      currentChunk = sentence;
+    }
+  }
+  
+  if (currentChunk) chunks.push(currentChunk);
+  return chunks;
+}
 
 export function readTextAloud(text, langCode = 'hi-IN', onEnd = () => {}) {
   if (!synth) {
-    alert("Audio speech output is not supported in this browser.");
+    console.warn("Audio speech output is not supported in this browser.");
     return false;
   }
 
   // Cancel any ongoing speech
   synth.cancel();
+  utteranceQueue = [];
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = langCode === 'hi' ? 'hi-IN' : langCode === 'en' ? 'en-IN' : 'hi-IN';
-  utterance.rate = 0.9; // Slightly slower for rural clarity
-  utterance.pitch = 1.0;
+  const chunks = splitTextIntoChunks(text, 200);
+  let currentChunkIndex = 0;
 
-  utterance.onend = () => {
-    currentUtterance = null;
-    onEnd();
+  const speakNextChunk = () => {
+    if (currentChunkIndex >= chunks.length) {
+      currentUtterance = null;
+      onEnd();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
+    utterance.lang = langCode === 'hi' ? 'hi-IN' : langCode === 'en' ? 'en-IN' : langCode;
+    utterance.rate = 0.9; // Slightly slower for rural clarity
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    utterance.onend = () => {
+      currentChunkIndex++;
+      speakNextChunk();
+    };
+
+    utterance.onerror = (error) => {
+      console.error('Speech synthesis error:', error);
+      currentChunkIndex++;
+      speakNextChunk();
+    };
+
+    try {
+      currentUtterance = utterance;
+      synth.speak(utterance);
+    } catch (error) {
+      console.error('Error starting speech:', error);
+      currentChunkIndex++;
+      speakNextChunk();
+    }
   };
 
-  utterance.onerror = () => {
-    currentUtterance = null;
-    onEnd();
-  };
-
-  currentUtterance = utterance;
-  synth.speak(utterance);
+  speakNextChunk();
   return true;
 }
 

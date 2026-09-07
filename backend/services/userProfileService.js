@@ -10,6 +10,11 @@ const userProfileService = {
   analyzeProfile: async (queryText, currentProfile = {}, language = 'hi') => {
     try {
       const groq = getGroqClient();
+      
+      if (!queryText || queryText.trim().length === 0) {
+        throw new Error('Query cannot be empty');
+      }
+      
       const response = await groq.chat.completions.create({
         messages: [
           {
@@ -47,8 +52,38 @@ Ask at most one short nextQuestion. Only ask for a field that materially helps t
         response_format: { type: "json_object" }
       });
 
-      return JSON.parse(response.choices[0].message.content);
+      const responseText = response.choices[0].message.content;
+      
+      // Validate response is JSON
+      try {
+        const parsed = JSON.parse(responseText);
+        
+        // Ensure required fields exist
+        return {
+          extractedData: parsed.extractedData || {},
+          newInformationFound: parsed.newInformationFound || [],
+          missingInformation: parsed.missingInformation || [],
+          nextQuestion: parsed.nextQuestion || (language === 'en' ? 'Please tell me more.' : 'कृपया अधिक जानकारी दें।'),
+          shouldFilterSchemes: Boolean(parsed.shouldFilterSchemes)
+        };
+      } catch (parseError) {
+        console.error('Failed to parse Groq response as JSON. Raw response:', responseText);
+        throw new Error('Invalid response format from AI service');
+      }
     } catch (error) {
+      console.error('Error in analyzeProfile:', error);
+      
+      // Re-throw with more context
+      if (error.message.includes('API key')) {
+        throw new Error('API key error - service not properly configured');
+      }
+      if (error.message.includes('rate_limit') || error.status === 429) {
+        throw new Error('rate_limit - too many requests');
+      }
+      if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+        throw new Error('timeout - request took too long');
+      }
+      
       throw error;
     }
   }

@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowLeft, BadgePercent, Briefcase, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, Pause, Printer, Sprout, Users, Volume2, Wrench } from 'lucide-react';
+import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
+import { getBankNavigationUrl, getGeneralBankNavigationUrl, getSchemeProviders } from '../services/bankService';
 
 const FIELD_LABELS = {
   agriculture_allied: 'कृषि एवं संबद्ध गतिविधियाँ', manufacturing: 'विनिर्माण', retail_trading: 'खुदरा एवं व्यापार', food_processing: 'खाद्य प्रसंस्करण', tech_it: 'तकनीक एवं आईटी', transport: 'परिवहन एवं लॉजिस्टिक्स', tourism: 'पर्यटन एवं आतिथ्य', handicrafts: 'हस्तशिल्प एवं कारीगरी', healthcare: 'स्वास्थ्य सेवाएँ', services: 'अन्य सेवाएँ'
+};
+
+const CATEGORY_LABELS = {
+  male: 'Male / पुरुष',
+  female: 'Female / महिला',
+  lgbtq: 'LGBTQ+',
+  pwd: 'Persons with Disabilities (PwD) / दिव्यांगजन',
+  other: 'Other / अन्य'
 };
 
 function getSchemeIcon(scheme) {
@@ -25,17 +34,18 @@ function describeEligibility(scheme, criteria, isHindi) {
   if (scheme.states?.length && !scheme.states.includes('all')) items.push({ text: `${isHindi ? 'लागू राज्य:' : 'Applicable state:'} ${scheme.states.join(', ')}`, match: !criteria.state || scheme.states.includes(criteria.state) });
   if (scheme.income_limit !== null && scheme.income_limit !== undefined) items.push({ text: `${isHindi ? 'पारिवारिक आय सीमा:' : 'Family-income limit:'} ₹${scheme.income_limit.toLocaleString('en-IN')}`, match: !criteria.income || Number(criteria.income) <= scheme.income_limit });
   if (scheme.eligible_categories?.length && !scheme.eligible_categories.includes('all')) items.push({ text: `${isHindi ? 'सामाजिक श्रेणी:' : 'Social category:'} ${scheme.eligible_categories.map((value) => value.toUpperCase()).join(', ')}`, match: !criteria.social_category || scheme.eligible_categories.includes(criteria.social_category) });
-  if (scheme.eligible_genders?.length && !scheme.eligible_genders.includes('all')) items.push({ text: `${isHindi ? 'लिंग:' : 'Gender:'} ${scheme.eligible_genders.join(', ')}`, match: !criteria.gender || scheme.eligible_genders.includes(criteria.gender) });
+  if (scheme.eligible_genders?.length && !scheme.eligible_genders.includes('all')) items.push({ text: `${isHindi ? 'श्रेणी:' : 'Category:'} ${scheme.eligible_genders.map((category) => CATEGORY_LABELS[category] || category).join(', ')}`, match: !criteria.gender || scheme.eligible_genders.includes(criteria.gender) });
   if (scheme.business_status?.length && !scheme.business_status.includes('all')) items.push({ text: `${isHindi ? 'व्यवसाय की स्थिति:' : 'Business status:'} ${scheme.business_status.join(', ')}`, match: !criteria.business_status || scheme.business_status.includes(criteria.business_status) });
   return items;
 }
 
-export default function SchemeDetailScreen({ scheme, userCriteria = {}, onBack, currentLang }) {
+export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLocation = {}, onBack, currentLang }) {
   const [speaking, setSpeaking] = useState(false);
   const isHindi = currentLang !== 'en';
   const Icon = getSchemeIcon(scheme);
   const title = isHindi ? (scheme.name_hi || scheme.name) : scheme.name;
   const eligibility = describeEligibility(scheme, userCriteria, isHindi);
+  const providers = getSchemeProviders(scheme);
   const highlights = [
     scheme.max_financial_assistance && { icon: IndianRupee, value: money(scheme.max_financial_assistance), label: isHindi ? 'अधिकतम वित्तीय सहायता' : 'Maximum financial support' },
     scheme.subsidy_percentage && { icon: BadgePercent, value: scheme.subsidy_percentage, label: isHindi ? 'सहायता / सब्सिडी' : 'Support / subsidy' },
@@ -63,9 +73,9 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, onBack, 
     </nav>
 
     <header className="relative border-b border-slate-200 pb-6 sm:pb-7">
-      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-md">{scheme.scope === 'central' ? (isHindi ? 'केंद्र सरकार की योजना' : 'Central Government Scheme') : (isHindi ? `${scheme.states?.[0] || ''} सरकार` : 'State Government Scheme')}</div>
-      <div className="flex gap-4 sm:gap-6 pr-2 sm:pr-40 items-start">
-        <div className="mt-3 shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#f5f1ea] text-[#137848] flex items-center justify-center"><Icon className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+      <div className="sm:absolute sm:top-0 sm:right-0 bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-md inline-block mb-4 sm:mb-0">{scheme.scope === 'central' ? (isHindi ? 'केंद्र सरकार की योजना' : 'Central Government Scheme') : (isHindi ? `${scheme.states?.[0] || ''} सरकार` : 'State Government Scheme')}</div>
+      <div className="flex gap-3 sm:gap-6 pr-0 sm:pr-40 items-start">
+        <div className="mt-1 sm:mt-3 shrink-0 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-[#f5f1ea] text-[#137848] flex items-center justify-center"><Icon className="w-8 h-8 sm:w-12 sm:h-12" /></div>
         <div className="pt-1 max-w-4xl">
           <h1 className="text-3xl sm:text-4xl font-black text-gov-navy leading-tight">{title}</h1>
           {isHindi && <p className="mt-1 text-base font-bold text-slate-500">{scheme.name}</p>}
@@ -91,6 +101,18 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, onBack, 
       <h2 className="text-xl sm:text-2xl font-black text-blue-900 flex items-center gap-3"><Users className="w-7 h-7" />{isHindi ? 'पात्रता' : 'Eligibility'}</h2>
       <ul className="mt-4 space-y-2.5 text-base sm:text-lg text-slate-800">{eligibility.map((item, index) => <li key={index} className="flex gap-3"><span className={item.match ? 'text-emerald-700 font-black' : 'text-amber-600 font-black'}>{item.match ? '✓' : '!'}</span><span>{item.text}{userCriteria.voiceMode && <small className="block text-xs text-slate-500 mt-0.5">{item.match ? (isHindi ? 'आपकी जानकारी से मेल खाती है' : 'Matches your information') : (isHindi ? 'अतिरिक्त जानकारी आवश्यक हो सकती है' : 'More information may be needed')}</small>}</span></li>)}</ul>
     </section>}
+
+    <section className="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-5 sm:p-6">
+      <h2 className="text-xl sm:text-2xl font-black text-gov-navy flex items-center gap-3"><Building2 className="w-7 h-7 text-gov-saffron" />{isHindi ? 'कहाँ से योजना मिलेगी?' : 'Where can you get this scheme?'}</h2>
+      <p className="mt-3 text-base text-slate-700 font-semibold leading-relaxed">{isHindi ? `इस योजना के लिए ${providers.type_hi} में आवेदन करें।` : `Apply through ${providers.type}.`}</p>
+      {providers.banks?.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{providers.banks.map((bank) => <span key={bank.shortName} className="bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-bold text-slate-800">{bank.shortName}</span>)}</div>}
+      <p className="mt-4 text-sm text-slate-600">{isHindi ? `आपका स्थान: ${userLocation.state || userCriteria.state || 'भारत'}। निकटतम शाखा जाने के लिए बैंक चुनें।` : `Your location: ${userLocation.state || userCriteria.state || 'India'}. Choose a bank to find the nearest branch.`}</p>
+      <div className="mt-4 flex flex-col sm:flex-row gap-3">
+        {providers.banks?.slice(0, 3).map((bank) => <a key={bank.shortName} href={getBankNavigationUrl(bank, userLocation)} target="_blank" rel="noopener noreferrer" className="bg-gov-navy hover:bg-[#083d71] text-white rounded-md py-3 px-4 font-extrabold flex items-center justify-center gap-2"><MapPin className="w-5 h-5" />{isHindi ? `${bank.shortName} खोजें` : `Find ${bank.shortName}`}</a>)}
+        {!providers.banks?.length && <a href={getGeneralBankNavigationUrl(userLocation)} target="_blank" rel="noopener noreferrer" className="bg-gov-navy hover:bg-[#083d71] text-white rounded-md py-3 px-4 font-extrabold flex items-center justify-center gap-2"><MapPin className="w-5 h-5" />{isHindi ? 'निकटतम बैंक खोजें' : 'Find nearest bank'}</a>}
+      </div>
+      <p className="mt-3 text-xs text-slate-500">{isHindi ? 'शाखा में जाने से पहले पात्रता और उपलब्धता की पुष्टि करें।' : 'Confirm scheme eligibility and availability with the branch before visiting.'}</p>
+    </section>
 
     {scheme.required_documents_hi?.length > 0 && <section className="mt-7">
       <h2 className="text-xl sm:text-2xl font-black text-gov-navy flex items-center gap-3"><FileText className="w-7 h-7 text-gov-saffron" />{isHindi ? 'आवश्यक दस्तावेज' : 'Required documents'}</h2>

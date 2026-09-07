@@ -132,7 +132,7 @@ export default function StudentFlow({
     else setStep(7);
   };
 
-  const handleSelectGender = (genderId) => {
+  const handleSelectCategoryType = (genderId) => {
     const updated = { ...criteria, gender: genderId };
     setCriteria(updated);
     const { pool, lastFilteredFactor } = filterStudentSchemes(SCHEMES, updated);
@@ -154,7 +154,7 @@ export default function StudentFlow({
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-5">
       {/* Step Header Bar */}
       <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={handleBack}
             className="flex items-center gap-1.5 text-gov-navy font-extrabold text-base hover:underline"
@@ -350,7 +350,7 @@ export default function StudentFlow({
             <label className="text-sm font-bold text-slate-800">
               {isHindi ? 'सटीक पारिवारिक आय दर्ज करें (₹):' : 'Enter Exact Family Income (₹):'}
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
@@ -366,7 +366,7 @@ export default function StudentFlow({
                   if (customIncomeInput) handleSelectIncome(Number(customIncomeInput));
                 }}
                 disabled={!customIncomeInput}
-                className="gov-btn-primary px-6"
+                className="gov-btn-primary px-6 w-full sm:w-auto"
               >
                 {isHindi ? 'आगे बढ़ें' : 'Next'}
               </button>
@@ -403,7 +403,7 @@ export default function StudentFlow({
         </div>
       )}
 
-      {/* STEP 7: GENDER */}
+      {/* STEP 7: CATEGORY */}
       {step === 7 && (
         <div className="space-y-4 animate-in fade-in duration-200">
           <div className="space-y-1">
@@ -416,11 +416,13 @@ export default function StudentFlow({
             {[
               { id: 'male', label: isHindi ? '👨 छात्र' : '👨 Male Student' },
               { id: 'female', label: isHindi ? '👩 छात्रा' : '👩 Female Student' },
+              { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' },
+              { id: 'pwd', label: isHindi ? '♿ दिव्यांग छात्र/छात्रा (PwD)' : '♿ Student with Disability (PwD)' },
               { id: 'other', label: isHindi ? '⚧ अन्य' : '⚧ Other' }
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleSelectGender(item.id)}
+                onClick={() => handleSelectCategoryType(item.id)}
                 className={`gov-card p-5 w-full text-left flex items-center justify-between transition-all hover:scale-[1.01] ${
                   criteria.gender === item.id ? 'gov-card-active' : ''
                 }`}

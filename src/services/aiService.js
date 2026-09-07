@@ -3,17 +3,62 @@
  * Sends text only to the app backend. The Groq key never enters the browser bundle.
  */
 
-export async function processNaturalLanguageQuery(queryText, currentProfile = {}, language = 'hi') {
-  const response = await fetch('/api/analyze-user', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: queryText, currentProfile, language })
-  });
-  if (!response.ok) throw new Error('Profile analysis unavailable');
-  return response.json();
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function fallbackLocalNLP(queryText) {
+export async function processNaturalLanguageQuery(queryText, currentProfile = {}, language = 'hi') {
+  let lastError;
+  
+  // Retry logic with exponential backoff
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch('/api/analyze-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: queryText, currentProfile, language }),
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
+      
+      if (!response.ok) {
+        if (response.status === 502 || response.status === 503) {
+          lastError = new Error('Backend service temporarily unavailable. Retrying...');
+          if (attempt < MAX_RETRIES - 1) {
+            await sleep(RETRY_DELAY * Math.pow(2, attempt));
+            continue;
+          }
+        } else if (response.status === 500) {
+          const errorData = await response.json().catch(() => ({}));
+          lastError = new Error(errorData.error || 'Server error while analyzing profile');
+        } else {
+          lastError = new Error('Profile analysis unavailable');
+        }
+        throw lastError;
+      }
+      
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+      
+      // If it's a network error and we haven't exhausted retries, try again
+      if (attempt < MAX_RETRIES - 1 && 
+          (error instanceof TypeError || error.name === 'AbortError')) {
+        await sleep(RETRY_DELAY * Math.pow(2, attempt));
+        continue;
+      }
+      
+      // Last attempt failed, throw the error
+      throw lastError;
+    }
+  }
+  
+  throw lastError || new Error('Profile analysis unavailable');
+}
+
+export function fallbackLocalNLP(queryText) {
   const text = queryText.toLowerCase();
 
   // Student checks
@@ -55,8 +100,37 @@ function fallbackLocalNLP(queryText) {
   if (text.includes("फैक्ट्री") || text.includes("प्लांट") || text.includes("मशीन")) field = "manufacturing";
 
   return {
-    user_type: "business",
-    field: field,
-    summary_hi: "हमें समझ आया कि आप नया व्यवसाय या उद्योग शुरू करने के लिए सरकारी लोन सहायता खोज रहे हैं।"
+    extractedData: {
+      category: "business",
+      businessField: field
+    },
+    newInformationFound: [],
+    missingInformation: [],
+    nextQuestion: language === 'en' ? 'What state are you in?' : 'आप किस राज्य में हैं?',
+    shouldFilterSchemes: false
   };
+}
+
+// Fallback handler if backend fails completely
+export async function processNaturalLanguageQueryWithFallback(queryText, currentProfile = {}, language = 'hi') {
+  try {
+    return await processNaturalLanguageQuery(queryText, currentProfile, language);
+  } catch (error) {
+    console.warn('Backend failed, using local NLP fallback:', error.message);
+    // Try local fallback as last resort
+    return {
+      extractedData: {
+        category: currentProfile.category || null,
+        businessField: currentProfile.businessField || null
+      },
+      newInformationFound: [],
+      missingInformation: language === 'en' 
+        ? ['Please tell us your state, income, and what support you need']
+        : ['कृपया अपना राज्य, आय, और क्या सहायता चाहिए, यह बताइए'],
+      nextQuestion: language === 'en'
+        ? 'We had trouble understanding. Could you share your state and what business or support you need?'
+        : 'हमें समझने में परेशानी हुई। कृपया अपना राज्य और आप किस व्यवसाय या सहायता की चाहत रखते हैं, बताइए?',
+      shouldFilterSchemes: false
+    };
+  }
 }

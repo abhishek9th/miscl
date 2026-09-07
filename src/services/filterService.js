@@ -80,7 +80,7 @@ export function filterBusinessSchemes(schemes = SCHEMES, criteria = {}) {
     }
   }
 
-  // 6. Gender Filter
+  // 6. Category Filter
   if (criteria.gender) {
     const prevCount = pool.length;
     pool = pool.filter(s => {
@@ -88,7 +88,7 @@ export function filterBusinessSchemes(schemes = SCHEMES, criteria = {}) {
       return s.eligible_genders.includes(criteria.gender);
     });
     if (pool.length === 0 && prevCount > 0) {
-      lastFilteredFactor = `चुने गए लिंग के लिए इस श्रेणी में कोई सीमित योजना नहीं मिली।`;
+      lastFilteredFactor = `चुनी गई श्रेणी के लिए इस क्षेत्र में कोई सीमित योजना नहीं मिली।`;
       return { pool: [], lastFilteredFactor };
     }
   }
@@ -173,7 +173,7 @@ export function filterStudentSchemes(schemes = SCHEMES, criteria = {}) {
     }
   }
 
-  // 7. Gender
+  // 7. Category
   if (criteria.gender) {
     const prevCount = pool.length;
     pool = pool.filter(s => {
@@ -181,7 +181,7 @@ export function filterStudentSchemes(schemes = SCHEMES, criteria = {}) {
       return s.eligible_genders.includes(criteria.gender);
     });
     if (pool.length === 0 && prevCount > 0) {
-      lastFilteredFactor = `चुने गए लिंग के लिए इस स्कॉलरशिप श्रेणी में कोई सीमित योजना नहीं मिली।`;
+      lastFilteredFactor = `चुनी गई श्रेणी के लिए इस स्कॉलरशिप श्रेणी में कोई सीमित योजना नहीं मिली।`;
       return { pool: [], lastFilteredFactor };
     }
   }

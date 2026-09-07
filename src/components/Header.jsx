@@ -19,7 +19,7 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
     <>
       <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
         {/* Government utility strip */}
-        <div className="bg-[#f4f5f6] border-b border-slate-200 px-4 py-2 text-slate-700">
+        <div className="bg-[#f4f5f6] border-b border-slate-200 px-3 sm:px-4 py-2 text-slate-700">
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
             
             {/* Left: Ministry & Govt of India Info */}
@@ -66,7 +66,7 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
         </div>
 
         {/* Main Header Content */}
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-3">
           
           {/* Logo & Portal Title */}
           <button 
@@ -76,7 +76,7 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
           >
             <svg
               viewBox="0 0 82 70"
-              className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 group-hover:scale-105 transition-transform"
+              className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 group-hover:scale-105 transition-transform"
               aria-hidden="true"
             >
               <circle cx="27" cy="12" r="10" fill="#F97316" />
@@ -85,11 +85,11 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
               <path d="M17 64c14-4 22-16 27-29 5-13 12-22 28-31-9 15-17 30-23 45-5 13-16 19-32 15Z" fill="#15803D" />
               <path d="M30 31c-8 4-14 4-22 1 7-1 13-5 18-11 3 2 5 6 4 10Z" fill="#16A34A" />
             </svg>
-            <div className="leading-none">
-              <h1 className="text-[29px] sm:text-[34px] font-extrabold tracking-tight font-sans whitespace-nowrap">
+            <div className="leading-none min-w-0">
+              <h1 className="text-[24px] sm:text-[34px] font-extrabold tracking-tight font-sans whitespace-nowrap">
                 <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Setu</span>
               </h1>
-              <p className="mt-1 text-[11px] sm:text-sm font-bold text-slate-600 whitespace-nowrap">
+              <p className="mt-1 text-[9px] sm:text-sm font-bold text-slate-600 whitespace-nowrap">
                 {isHindi ? "सरकारी योजनाओं से सशक्त भविष्य" : "Empowering Future with Government Schemes"}
               </p>
             </div>

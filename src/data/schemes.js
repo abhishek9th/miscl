@@ -746,5 +746,98 @@ export const SCHEMES = [
       "आवास प्रशिक्षण केंद्र में दाखिला लें"
     ],
     official_link: "http://ddugky.gov.in/"
+  },
+
+  {
+    id: "scheme_smile_transgender_support",
+    name: "SMILE Scheme - Support for Transgender Persons",
+    name_hi: "स्माइल योजना - ट्रांसजेंडर व्यक्तियों के लिए सहायता",
+    type: "business",
+    fields: ["all"],
+    scope: "central",
+    states: ["all"],
+    income_limit: null,
+    eligible_genders: ["lgbtq"],
+    eligible_categories: ["all"],
+    business_status: ["new", "existing", "expansion"],
+    min_financial_assistance: 0,
+    max_financial_assistance: 100000,
+    subsidy_percentage: "कौशल प्रशिक्षण और आजीविका सहायता",
+    description_hi: "ट्रांसजेंडर व्यक्तियों के लिए कौशल प्रशिक्षण, आजीविका सहायता, परामर्श और पुनर्वास सेवाओं का समर्थन।",
+    benefits_hi: [
+      "कौशल विकास और रोजगार से जुड़ी सहायता",
+      "आजीविका और स्वरोजगार के लिए मार्गदर्शन",
+      "स्वास्थ्य, परामर्श और पुनर्वास सेवाओं तक पहुंच"
+    ],
+    required_documents_hi: ["आधार कार्ड / पहचान पत्र", "ट्रांसजेंडर प्रमाण पत्र", "बैंक खाता विवरण", "निवास प्रमाण पत्र"],
+    application_steps_hi: [
+      "National Portal for Transgender Persons पर पंजीकरण करें",
+      "ट्रांसजेंडर प्रमाण पत्र और पहचान दस्तावेज अपलोड करें",
+      "उपलब्ध कौशल, आजीविका या पुनर्वास सहायता चुनें",
+      "संबंधित जिला समाज कल्याण कार्यालय से सत्यापन कराएं"
+    ],
+    official_link: "https://transgender.dosje.gov.in/"
+  },
+
+  {
+    id: "scheme_national_handicapped_finance",
+    name: "National Divyangjan Finance and Development Corporation Support",
+    name_hi: "राष्ट्रीय दिव्यांगजन वित्त एवं विकास निगम सहायता",
+    type: "business",
+    fields: ["all"],
+    scope: "central",
+    states: ["all"],
+    income_limit: null,
+    eligible_genders: ["pwd"],
+    eligible_categories: ["all"],
+    business_status: ["new", "existing", "expansion"],
+    min_financial_assistance: 10000,
+    max_financial_assistance: 1000000,
+    subsidy_percentage: "रियायती ब्याज दर पर ऋण",
+    description_hi: "दिव्यांगजन के लिए स्वरोजगार, शिक्षा, कौशल प्रशिक्षण और छोटे व्यवसाय हेतु रियायती वित्तीय सहायता।",
+    benefits_hi: [
+      "स्वरोजगार और छोटे व्यवसाय के लिए रियायती ऋण",
+      "कौशल प्रशिक्षण और आय-सृजन गतिविधियों के लिए सहायता",
+      "दिव्यांगजन वित्त विकास निगम या राज्य चैनलाइजिंग एजेंसी के माध्यम से आवेदन"
+    ],
+    required_documents_hi: ["दिव्यांगता प्रमाण पत्र / UDID कार्ड", "आधार कार्ड", "आय प्रमाण पत्र", "व्यवसाय या प्रशिक्षण योजना", "बैंक खाता विवरण"],
+    application_steps_hi: [
+      "UDID कार्ड या दिव्यांगता प्रमाण पत्र तैयार रखें",
+      "अपने राज्य की चैनलाइजिंग एजेंसी या जिला समाज कल्याण कार्यालय से संपर्क करें",
+      "ऋण या प्रशिक्षण सहायता के लिए आवेदन जमा करें",
+      "सत्यापन के बाद स्वीकृति और वितरण की प्रक्रिया पूरी करें"
+    ],
+    official_link: "https://www.nhfdc.nic.in/"
+  },
+
+  {
+    id: "scheme_post_matric_disability_scholarship",
+    name: "Post-Matric Scholarship for Students with Disabilities",
+    name_hi: "दिव्यांग विद्यार्थियों के लिए पोस्ट-मैट्रिक छात्रवृत्ति",
+    type: "student",
+    student_type: "scholarship",
+    education_levels: ["class_10_12", "undergraduate", "postgraduate", "professional", "phd", "all"],
+    course_fields: ["engineering", "medical", "management", "arts", "science", "law", "agriculture", "other", "all"],
+    scope: "central",
+    states: ["all"],
+    income_limit: 250000,
+    eligible_genders: ["pwd"],
+    eligible_categories: ["all"],
+    max_financial_assistance: 50000,
+    subsidy_percentage: "शुल्क और भत्ता सहायता",
+    description_hi: "दिव्यांग विद्यार्थियों की पोस्ट-मैट्रिक और उच्च शिक्षा के लिए शुल्क, पुस्तक और सहायक भत्ते की सहायता।",
+    benefits_hi: [
+      "शिक्षण शुल्क और अनिवार्य शुल्क में सहायता",
+      "पुस्तक, अनुरक्षक और अन्य निर्धारित भत्ते",
+      "मान्यता प्राप्त संस्थानों में उच्च शिक्षा जारी रखने का समर्थन"
+    ],
+    required_documents_hi: ["दिव्यांगता प्रमाण पत्र / UDID कार्ड", "आय प्रमाण पत्र", "पिछली कक्षा की अंकतालिका", "संस्थान का प्रवेश प्रमाण", "बैंक खाता विवरण"],
+    application_steps_hi: [
+      "National Scholarship Portal पर पंजीकरण करें",
+      "दिव्यांग विद्यार्थियों की पोस्ट-मैट्रिक छात्रवृत्ति चुनें",
+      "UDID, आय और प्रवेश दस्तावेज अपलोड करें",
+      "संस्थान और जिला स्तर के सत्यापन के बाद छात्रवृत्ति प्राप्त करें"
+    ],
+    official_link: "https://scholarships.gov.in/"
   }
 ];

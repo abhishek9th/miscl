@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users } from 'lucide-react';
 import { getTranslation } from '../data/translations';
 
@@ -34,11 +34,46 @@ export default function HomeScreen({
   const t = (key) => getTranslation(currentLang, key);
   const isHindi = currentLang === 'hi';
 
+  // EMI Calculator State
+  const [loanAmount, setLoanAmount] = useState('');
+  const [loanTenure, setLoanTenure] = useState('');
+  const [interestRate, setInterestRate] = useState('8.5');
+
+  // Calculate EMI
+  const calculateEMI = () => {
+    if (!loanAmount || !loanTenure || !interestRate) return null;
+    
+    const principal = parseFloat(loanAmount);
+    const months = parseFloat(loanTenure) * 12;
+    const monthlyRate = parseFloat(interestRate) / 12 / 100;
+    
+    if (monthlyRate === 0) {
+      const emi = principal / months;
+      return {
+        emi: emi.toFixed(0),
+        totalAmount: principal.toFixed(0),
+        totalInterest: '0'
+      };
+    }
+    
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+    const totalAmount = emi * months;
+    const totalInterest = totalAmount - principal;
+    
+    return {
+      emi: emi.toFixed(0),
+      totalAmount: totalAmount.toFixed(0),
+      totalInterest: totalInterest.toFixed(0)
+    };
+  };
+
+  const emiResult = calculateEMI();
+
   return (
     <div className="w-full font-sans space-y-6">
       
       {/* HERO & LATEST GOVERNMENT NOTICES */}
-      <div className="max-w-7xl mx-auto w-full px-4 pt-2 sm:pt-3">
+      <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 pt-2 sm:pt-3">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(320px,1.1fr)] gap-3 items-stretch">
       {/* HERO BANNER SECTION */}
       <div className="relative w-full overflow-hidden min-h-[340px] sm:min-h-[360px] flex items-center bg-[#FFFBEB] rounded-lg">
@@ -47,11 +82,11 @@ export default function HomeScreen({
         <img
           src="/rural_farmer_couple.png"
           alt="Happy Indian Farmer Couple"
-          className="absolute top-0 bottom-0 right-0 left-0 md:left-[40%] w-full md:w-[60%] h-full object-cover object-right sm:object-center"
+          className="absolute top-0 bottom-0 right-0 left-0 md:left-[40%] w-full md:w-[60%] h-full object-cover object-right sm:object-center opacity-25 md:opacity-100"
         />
 
         {/* Smooth Blend Transition Overlay between 40% margin and image */}
-        <div className="absolute inset-y-0 left-0 md:left-[40%] w-full md:w-[25%] bg-gradient-to-r from-[#FFFBEB] via-[#FFFBEB]/80 to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 left-0 md:left-[40%] w-full md:w-[25%] bg-gradient-to-r from-[#FFFBEB] via-[#FFFBEB]/90 to-transparent z-10 pointer-events-none"></div>
 
         {/* Left Side Content Layer (Positioned over solid 40% beige background) */}
         <div className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -99,48 +134,7 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Authentic "Sabka Sath Sabka Vikas" Emblem Sign (Direct Overlay without Card Box) */}
-        <div className="absolute top-4 right-6 sm:right-10 z-30 flex flex-col items-center justify-center text-center space-y-0.5 select-none min-w-[130px] drop-shadow-md">
-          
-          {/* Top Saffron Painterly Brush Stroke SVG */}
-          <svg viewBox="0 0 120 22" className="w-28 h-5 text-[#FF9933] overflow-visible">
-            <path
-              d="M 5 18 Q 45 4, 115 6 Q 65 10, 5 18"
-              fill="currentColor"
-            />
-            <path
-              d="M 12 14 Q 55 2, 110 5"
-              stroke="#EA580C"
-              strokeWidth="2"
-              fill="none"
-              opacity="0.8"
-            />
-          </svg>
 
-          {/* Stacked Devanagari Slogan Text in Deep Navy */}
-          <div className="font-black text-[#0b2341] tracking-tight py-0.5 space-y-0.5">
-            <div className="text-[13px] leading-tight font-extrabold uppercase">सबका</div>
-            <div className="text-[14px] leading-tight font-black uppercase text-[#0b2341] -mt-0.5">साथ</div>
-            <div className="text-[13px] leading-tight font-extrabold uppercase -mt-0.5">सबका</div>
-            <div className="text-[14px] leading-tight font-black uppercase text-[#0b2341] -mt-0.5">विकास</div>
-          </div>
-
-          {/* Bottom Green Painterly Brush Strokes SVG */}
-          <svg viewBox="0 0 120 24" className="w-28 h-5 text-[#138808] overflow-visible">
-            <path
-              d="M 5 6 Q 65 20, 115 10 Q 60 22, 5 16"
-              fill="currentColor"
-            />
-            <path
-              d="M 12 12 Q 70 24, 110 14"
-              stroke="#16A34A"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.9"
-            />
-          </svg>
-        </div>
       </div>
 
       {/* Notice panel: desktop right rail, mobile below the hero */}
@@ -184,7 +178,7 @@ export default function HomeScreen({
       </div>
 
       {/* Main Page Container for Grid & Features */}
-      <div className="max-w-6xl mx-auto px-4 pb-6 space-y-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-6 space-y-8">
 
       {/* MAIN SECTION HEADING */}
       <div className="text-left space-y-1.5 pt-2">
@@ -363,7 +357,7 @@ export default function HomeScreen({
             </div>
           </div>
 
-          <div className="px-7 py-7 lg:py-8 flex flex-col justify-between gap-5">
+          <div className="px-5 sm:px-7 py-7 lg:py-8 flex flex-col justify-between gap-5">
             <div>
               <h2 className="text-3xl sm:text-4xl font-black leading-tight text-[#075C3B]">
                 {isHindi ? '“सरकारी योजनाओं का लाभ उठाएँ, आत्मनिर्भर भारत में अपना योगदान दें।”' : '“Use government schemes and contribute to an Atmanirbhar Bharat.”'}
@@ -389,11 +383,204 @@ export default function HomeScreen({
             </div>
             <button
               onClick={() => onSelectFlow('business')}
-              className="absolute bottom-6 right-6 bg-[#086344] hover:bg-[#064A33] text-white font-extrabold py-4 px-6 text-lg flex items-center gap-2 shadow-lg transition-colors"
+              className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 bg-[#086344] hover:bg-[#064A33] text-white font-extrabold py-3 sm:py-4 px-4 sm:px-6 text-base sm:text-lg flex items-center gap-2 shadow-lg transition-colors"
             >
               <span>{isHindi ? 'अभी खोज शुरू करें' : 'Start Searching Now'}</span>
               <ArrowRight className="w-6 h-6" />
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* EMI CALCULATOR SECTION */}
+      <section className="bg-gradient-to-br from-[#F5FAFF] to-[#E8F1FF] border-2 border-[#60A5FA] rounded-2xl p-6 sm:p-8 shadow-lg">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Left Side: Calculator Form */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black text-[#0B3D71] tracking-tight">
+                  {isHindi ? "EMI कैलकुलेटर" : "EMI Calculator"}
+                </h3>
+                <p className="text-sm text-slate-600 font-semibold">
+                  {isHindi 
+                    ? "सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं"
+                    : "Estimate your monthly EMI for government loans"}
+                </p>
+              </div>
+
+              {/* Loan Amount Slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-extrabold text-[#0B3D71]">
+                    {isHindi ? "लोन राशि (₹)" : "Loan Amount (₹)"}
+                  </label>
+                  <span className="text-xl font-black text-[#0B75C9]">
+                    ₹ {loanAmount ? parseInt(loanAmount).toLocaleString(isHindi ? 'en-IN' : 'en-US') : '0'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="10000"
+                  max="5000000"
+                  step="10000"
+                  value={loanAmount || '100000'}
+                  onChange={(e) => setLoanAmount(e.target.value)}
+                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #0B75C9 0%, #0B75C9 ${((loanAmount || 100000) - 10000) / (5000000 - 10000) * 100}%, #BFDBFE ${((loanAmount || 100000) - 10000) / (5000000 - 10000) * 100}%, #BFDBFE 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs font-semibold text-slate-500">
+                  <span>₹10,000</span>
+                  <span>₹50,00,000</span>
+                </div>
+              </div>
+
+              {/* Loan Tenure Slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-extrabold text-[#0B3D71]">
+                    {isHindi ? "ऋण अवधि (वर्ष)" : "Loan Tenure (Years)"}
+                  </label>
+                  <span className="text-xl font-black text-[#0B75C9]">
+                    {loanTenure || '1'} {isHindi ? 'वर्ष' : 'yrs'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="30"
+                  step="1"
+                  value={loanTenure || '5'}
+                  onChange={(e) => setLoanTenure(e.target.value)}
+                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #15803D 0%, #15803D ${((loanTenure || 5) - 1) / (30 - 1) * 100}%, #BFDBFE ${((loanTenure || 5) - 1) / (30 - 1) * 100}%, #BFDBFE 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs font-semibold text-slate-500">
+                  <span>1 {isHindi ? 'वर्ष' : 'year'}</span>
+                  <span>30 {isHindi ? 'वर्ष' : 'years'}</span>
+                </div>
+                {loanTenure && (
+                  <p className="text-xs text-[#0B75C9] font-bold bg-blue-50 p-2 rounded">
+                    = {parseInt(loanTenure) * 12} {isHindi ? 'महीने' : 'months'}
+                  </p>
+                )}
+              </div>
+
+              {/* Interest Rate Slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-extrabold text-[#0B3D71]">
+                    {isHindi ? "ब्याज दर (% वार्षिक)" : "Interest Rate (% p.a.)"}
+                  </label>
+                  <span className="text-xl font-black text-[#D97706]">
+                    {interestRate}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="4"
+                  max="12"
+                  step="0.5"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(e.target.value)}
+                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #D97706 0%, #D97706 ${(interestRate - 4) / (12 - 4) * 100}%, #BFDBFE ${(interestRate - 4) / (12 - 4) * 100}%, #BFDBFE 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs font-semibold text-slate-500">
+                  <span>4%</span>
+                  <span>12%</span>
+                </div>
+                <div className="bg-[#FEF3C7] border border-[#FDE68A] p-2 rounded text-xs font-bold text-[#92400E]">
+                  {interestRate === '5.5' && (isHindi ? 'PM मुद्रा - सबसे कम' : 'PM Mudra - Lowest')}
+                  {interestRate === '6.5' && (isHindi ? 'PM स्टैंड-अप इंडिया' : 'PM Stand-up India')}
+                  {interestRate === '7' && 'PMEGP'}
+                  {interestRate === '7.5' && (isHindi ? 'PM KUSUM' : 'PM KUSUM')}
+                  {interestRate === '8' && (isHindi ? 'सामान्य दर' : 'Standard Rate')}
+                  {interestRate === '8.5' && (isHindi ? 'सामान्य + दर' : 'Standard+ Rate')}
+                  {!['5.5', '6.5', '7', '7.5', '8', '8.5'].includes(interestRate) && (isHindi ? 'कस्टम दर' : 'Custom Rate')}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side: Results Display */}
+            <div className="space-y-4">
+              <div className="bg-white border-2 border-[#BFDBFE] rounded-xl p-6 space-y-5">
+                
+                {emiResult ? (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        {isHindi ? "मासिक किस्त" : "Monthly EMI"}
+                      </p>
+                      <p className="text-4xl font-black text-[#0B75C9]">
+                        ₹ {parseInt(emiResult.emi).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                      </p>
+                    </div>
+
+                    <div className="border-t-2 border-slate-200 pt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-600">
+                          {isHindi ? "कुल राशि" : "Total Amount"}
+                        </span>
+                        <span className="text-lg font-black text-[#0B3D71]">
+                          ₹ {parseInt(emiResult.totalAmount).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-600">
+                          {isHindi ? "कुल ब्याज" : "Total Interest"}
+                        </span>
+                        <span className="text-lg font-black text-[#D97706]">
+                          ₹ {parseInt(emiResult.totalInterest).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#E8F5E9] border-l-4 border-[#15803D] p-4 rounded-lg">
+                      <p className="text-xs font-bold text-[#065F46] uppercase tracking-widest mb-1">
+                        {isHindi ? "सूचना" : "Note"}
+                      </p>
+                      <p className="text-sm text-[#15803D] font-semibold leading-relaxed">
+                        {isHindi 
+                          ? "यह एक अनुमानित गणना है। वास्तविक EMI बैंक के नियमों के अनुसार भिन्न हो सकता है। सटीक जानकारी के लिए बैंक से संपर्क करें।"
+                          : "This is an estimate. Actual EMI may vary as per bank policies. Contact your bank for exact details."}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full py-8 space-y-3">
+                    <div className="w-16 h-16 rounded-full bg-[#E0E7FF] flex items-center justify-center text-2xl">
+                      📊
+                    </div>
+                    <p className="text-center text-slate-600 font-semibold">
+                      {isHindi 
+                        ? "लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें"
+                        : "Enter loan amount, tenure and rate to see your EMI"}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Info Box */}
+              <div className="bg-[#FEF3C7] border-2 border-[#FDE68A] rounded-lg p-4 space-y-2">
+                <p className="text-xs font-extrabold text-[#78350F] uppercase tracking-widest">
+                  {isHindi ? "मुख्य योजनाएँ" : "Popular Schemes"}
+                </p>
+                <ul className="text-sm text-[#92400E] font-semibold space-y-1.5">
+                  <li>• PM मुद्रा: ₹50,000 - ₹10 लाख</li>
+                  <li>• PMEGP: ₹25 - ₹100 लाख</li>
+                  <li>• PM किसान: कृषि ऋण सहायता</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>
