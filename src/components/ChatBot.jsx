@@ -3,8 +3,10 @@ import { Mic, Send, ChevronDown, Volume2, Volume1 } from 'lucide-react';
 import { processNaturalLanguageQuery } from '../services/aiService';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { cleanupRecording, startBrowserFallback, startGroqRecording, stopGroqRecording } from '../services/voiceService';
+import { useI18n } from '../i18n';
 
-export default function ChatBot({ currentLang, onVoiceProfileReady }) {
+export default function ChatBot({ onVoiceProfileReady }) {
+  const { tr, lang: currentLang } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -14,7 +16,6 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const fallbackRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const isHindi = currentLang === 'hi';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,7 +29,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
   const speak = (text) => {
     if (!text) return;
     setIsSpeaking(true);
-    readTextAloud(text, isHindi ? 'hi-IN' : 'en-IN', () => {
+    readTextAloud(text, currentLang, () => {
       setIsSpeaking(false);
     });
   };
@@ -42,9 +43,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
   // Initialize chat
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const greeting = isHindi
-        ? 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?'
-        : "Hello! I'm SchemeSetu. What kind of government scheme are you looking for?";
+      const greeting = tr("Hello! I'm SchemeSetu. What kind of government scheme are you looking for?", 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?');
       
       setMessages([{ id: 1, type: 'bot', text: greeting }]);
       speak(greeting);
@@ -71,9 +70,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
         setVoiceState('idle');
       } catch (error) {
         setVoiceState('error');
-        const errorMsg = isHindi 
-          ? 'आवाज़ समझने में समस्या। कृपया दोबारा कोशिश करें।'
-          : 'Could not understand audio. Please try again.';
+        const errorMsg = tr('Could not understand audio. Please try again.', 'आवाज़ समझने में समस्या। कृपया दोबारा कोशिश करें।');
         setMessages(prev => [...prev, { id: Date.now(), type: 'bot', text: errorMsg }]);
       }
       return;
@@ -83,7 +80,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
       setMessages(prev => [...prev, { 
         id: Date.now(), 
         type: 'bot', 
-        text: isHindi ? 'माइक्रोफोन उपलब्ध नहीं। कृपया टाइप करके बताएं।' : 'Microphone unavailable. Please type instead.' 
+        text: tr('Microphone unavailable. Please type instead.', 'माइक्रोफोन उपलब्ध नहीं। कृपया टाइप करके बताएं।')
       }]);
       return;
     }
@@ -95,8 +92,8 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
     } catch (error) {
       setVoiceState('error');
       const errorMsg = error?.name === 'NotAllowedError'
-        ? (isHindi ? 'माइक्रोफोन की अनुमति नहीं मिली।' : 'Microphone permission denied.')
-        : (isHindi ? 'माइक्रोफोन उपलब्ध नहीं है।' : 'Microphone not available.');
+        ? tr('Microphone permission denied.', 'माइक्रोफोन की अनुमति नहीं मिली।')
+        : tr('Microphone not available.', 'माइक्रोफोन उपलब्ध नहीं है।');
       setMessages(prev => [...prev, { id: Date.now(), type: 'bot', text: errorMsg }]);
     }
   };
@@ -121,28 +118,25 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
       const updatedProfile = { ...profile, ...newProfileData };
       setProfile(updatedProfile);
 
-      // Add bot response
-      const nextQuestion = result.nextQuestion || (isHindi 
-        ? 'अपनी जानकारी दें।' 
-        : 'Please provide more details.');
-      
-      setMessages(prev => [...prev, { 
-        id: Date.now() + 1, 
-        type: 'bot', 
-        text: nextQuestion 
+      // Add bot response — prefer the conversational answer to the user's question.
+      const botReply = result.answer || result.nextQuestion || tr('Please provide more details.', 'अपनी जानकारी दें।');
+
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'bot',
+        text: botReply
       }]);
 
-      // If schemes ready, trigger callback
+      // If enough is known, offer to show matching schemes after the user has had
+      // a moment to read the answer.
       if (result.shouldFilterSchemes) {
         setTimeout(() => {
           onVoiceProfileReady?.(updatedProfile);
-        }, 500);
+        }, 2600);
       }
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMsg = isHindi
-        ? 'जानकारी समझने में समस्या। कृपया दोबारा कोशिश करें।'
-        : 'Error processing your message. Please try again.';
+      const errorMsg = tr('Error processing your message. Please try again.', 'जानकारी समझने में समस्या। कृपया दोबारा कोशिश करें।');
       setMessages(prev => [...prev, { id: Date.now() + 2, type: 'bot', text: errorMsg }]);
     } finally {
       setIsProcessing(false);
@@ -166,8 +160,8 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0B75C9] to-[#075C9C] text-white p-4 flex items-center justify-between">
         <div>
-          <h3 className="font-black text-lg">{isHindi ? 'SchemeSetu सहायता' : 'SchemeSetu Help'}</h3>
-          <p className="text-xs text-blue-100">{isHindi ? 'बोलकर या लिखकर पूछें' : 'Ask by voice or text'}</p>
+          <h3 className="font-black text-lg">{tr('SchemeSetu Help', 'SchemeSetu सहायता')}</h3>
+          <p className="text-xs text-blue-100">{tr('Ask by voice or text', 'बोलकर या लिखकर पूछें')}</p>
         </div>
         <button 
           onClick={() => setIsOpen(false)} 
@@ -202,7 +196,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
                     ? 'text-red-500 hover:text-red-700 animate-pulse'
                     : 'text-[#0B75C9] hover:text-[#075C9C]'
                 }`}
-                title={isSpeaking ? (isHindi ? 'सुनना बंद करें' : 'Stop') : (isHindi ? 'फिर से सुनें' : 'Listen again')}
+                title={isSpeaking ? tr('Stop', 'सुनना बंद करें') : tr('Listen again', 'फिर से सुनें')}
               >
                 {isSpeaking && msg.id === messages[messages.length - 1].id ? (
                   <Volume1 className="w-4 h-4" />
@@ -235,7 +229,7 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !isProcessing && sendMessage()}
-            placeholder={isHindi ? 'संदेश भेजें...' : 'Type message...'}
+            placeholder={tr('Type message...', 'संदेश भेजें...')}
             className="flex-1 px-4 py-2.5 border-2 border-[#BFDBFE] rounded-xl focus:outline-none focus:border-[#0B75C9] focus:ring-2 focus:ring-[#60A5FA] font-semibold text-slate-800"
             disabled={isProcessing}
           />
@@ -260,8 +254,8 @@ export default function ChatBot({ currentLang, onVoiceProfileReady }) {
         >
           <Mic className="w-4 h-4" />
           {voiceState === 'recording'
-            ? (isHindi ? 'रिकॉर्डिंग... (क्लिक करके रोकें)' : 'Recording... (click to stop)')
-            : (isHindi ? 'माइक से बोलें' : 'Speak')}
+            ? tr('Recording... (click to stop)', 'रिकॉर्डिंग... (क्लिक करके रोकें)')
+            : tr('Speak', 'माइक से बोलें')}
         </button>
       </div>
     </div>

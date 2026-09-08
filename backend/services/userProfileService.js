@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
+import { LANG_NAMES } from './translationService.js';
 dotenv.config();
 
 const getGroqClient = () => {
@@ -15,14 +16,23 @@ const userProfileService = {
         throw new Error('Query cannot be empty');
       }
       
+      const replyLanguage = LANG_NAMES[language] || 'simple English';
+
       const response = await groq.chat.completions.create({
         messages: [
           {
             role: "system",
-            content: `You are SchemeSetu's careful government-scheme assistant. Extract only facts explicitly stated by the citizen. Never infer missing values. Merge new facts with currentProfile, preserving known values unless the user explicitly corrects them. Reply in ${language === 'en' ? 'simple English' : 'simple Hindi'}.
+            content: `You are SchemeSetu's helpful assistant for Indian Government welfare schemes (business, student/education, and skill/employment support).
+
+Your job has TWO parts on every turn:
+1. Directly ANSWER the citizen's typed question in a warm, clear, accurate way. If they ask what a scheme is, who is eligible, how to apply, what documents are needed, or which scheme fits their situation, answer it helpfully using well-known facts about Indian government schemes (PMEGP, PM Mudra, PM SVANidhi, Stand-Up India, National/Post-Matric Scholarships, PM Vishwakarma, PMKVY, etc.). If you are unsure of an exact figure, say so briefly and suggest checking the official portal — never invent specific numbers.
+2. QUIETLY extract any profile facts the citizen states (do not invent them).
+
+ALWAYS write "answer" in ${replyLanguage}. Keep it concise (2-5 short sentences), simple enough for a first-time user, and end with one short follow-up question ONLY if more detail is genuinely needed to help.
 
 Return ONLY this valid JSON shape:
 {
+  "answer": string,
   "extractedData": {
     "category": "business" | "student" | "skill_employment" | null,
     "businessField": "agriculture_allied" | "manufacturing" | "retail_trading" | "food_processing" | "tech_it" | "transport" | "tourism" | "handicrafts" | "healthcare" | "services" | null,
@@ -43,12 +53,12 @@ Return ONLY this valid JSON shape:
   "shouldFilterSchemes": boolean
 }
 
-Ask at most one short nextQuestion. Only ask for a field that materially helps the current deterministic filters. A category alone is enough to filter, but for business ask field before filtering if unknown; for student ask studentType before filtering if unknown. Set shouldFilterSchemes true once that minimum information is known, even if other optional fields remain null. Current profile: ${JSON.stringify(currentProfile)}`
+Merge new facts with currentProfile, preserving known values unless the citizen corrects them. Set shouldFilterSchemes true once the category is known (for business, also know the field; for student, also know the studentType) so the app can show matching schemes. "nextQuestion" may repeat the follow-up question you placed at the end of "answer" (or be empty). Current profile: ${JSON.stringify(currentProfile)}`
           },
           { role: "user", content: queryText }
         ],
-        model: "llama-3.1-8b-instant",
-        temperature: 0.1,
+        model: "openai/gpt-oss-120b",
+        temperature: 0.3,
         response_format: { type: "json_object" }
       });
 
@@ -60,6 +70,7 @@ Ask at most one short nextQuestion. Only ask for a field that materially helps t
         
         // Ensure required fields exist
         return {
+          answer: parsed.answer || parsed.nextQuestion || '',
           extractedData: parsed.extractedData || {},
           newInformationFound: parsed.newInformationFound || [],
           missingInformation: parsed.missingInformation || [],

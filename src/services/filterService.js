@@ -80,7 +80,20 @@ export function filterBusinessSchemes(schemes = SCHEMES, criteria = {}) {
     }
   }
 
-  // 6. Category Filter
+  // 6. Reservation / Social Category Filter
+  if (criteria.social_category) {
+    const prevCount = pool.length;
+    pool = pool.filter(s => {
+      if (!s.eligible_categories || s.eligible_categories.includes('all')) return true;
+      return s.eligible_categories.includes(criteria.social_category);
+    });
+    if (pool.length === 0 && prevCount > 0) {
+      lastFilteredFactor = `चुनी गई आरक्षण श्रेणी (${criteria.social_category.toUpperCase()}) के लिए वर्तमान में उपयुक्त योजना नहीं मिली।`;
+      return { pool: [], lastFilteredFactor };
+    }
+  }
+
+  // 7. Category Filter
   if (criteria.gender) {
     const prevCount = pool.length;
     pool = pool.filter(s => {

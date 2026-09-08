@@ -20,7 +20,7 @@ export function stopGroqRecording() {
       try {
         const audio = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
         if (!audio.size) throw new Error('Empty recording');
-        const response = await fetch('/api/voice/transcribe', { method: 'POST', headers: { 'Content-Type': audio.type || 'audio/webm' }, body: audio });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/voice/transcribe`, { method: 'POST', headers: { 'Content-Type': audio.type || 'audio/webm' }, body: audio });
         if (!response.ok) throw new Error('Transcription unavailable');
         const { text } = await response.json();
         if (!text?.trim()) throw new Error('Empty transcription');

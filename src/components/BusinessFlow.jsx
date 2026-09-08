@@ -3,15 +3,15 @@ import { ArrowLeft, Check, Search, MapPin, User } from 'lucide-react';
 import { INDIAN_STATES } from '../services/locationService';
 import { filterBusinessSchemes } from '../services/filterService';
 import { SCHEMES } from '../data/schemes';
-import { getTranslation } from '../data/translations';
+import { useI18n } from '../i18n';
 
-export default function BusinessFlow({ 
-  userState, 
-  onComplete, 
-  onNoSchemesFound, 
-  onBackToHome,
-  currentLang
+export default function BusinessFlow({
+  userState,
+  onComplete,
+  onNoSchemesFound,
+  onBackToHome
 }) {
+  const { t, tr } = useI18n();
   const [step, setStep] = useState(1);
   const [criteria, setCriteria] = useState({
     field: '',
@@ -19,6 +19,7 @@ export default function BusinessFlow({
     income: '',
     business_status: '',
     financial_need: '',
+    social_category: '',
     gender: ''
   });
 
@@ -26,47 +27,46 @@ export default function BusinessFlow({
   const [customIncomeInput, setCustomIncomeInput] = useState('');
   const [customNeedInput, setCustomNeedInput] = useState('');
 
-  const t = (key) => getTranslation(currentLang, key);
-  const isHindi = currentLang !== 'en';
-
   const { pool: matchingPool, lastFilteredFactor } = filterBusinessSchemes(SCHEMES, criteria);
 
-  // Business Field Options
-  const BUSINESS_FIELDS = isHindi ? [
-    { id: 'agriculture_allied', label: '🌾 कृषि एवं संबद्ध गतिविधियाँ', desc: 'डेयरी, पोल्ट्री, मत्स्य पालन, बागवानी' },
-    { id: 'manufacturing', label: '🏭 विनिर्माण', desc: 'कारखाना, उत्पाद निर्माण, प्रसंस्करण इकाई' },
-    { id: 'retail_trading', label: '🛒 खुदरा एवं व्यापार', desc: 'किराना, वस्त्र दुकान, खुदरा स्टोर' },
-    { id: 'food_processing', label: '🍲 खाद्य प्रसंस्करण', desc: 'अचार, पापड़, बेकरी, पैकेज्ड खाद्य' },
-    { id: 'tech_it', label: '💻 तकनीक एवं आईटी', desc: 'सॉफ्टवेयर, मोबाइल मरम्मत, डिजिटल सेवाएँ' },
-    { id: 'transport', label: '🚚 परिवहन एवं लॉजिस्टिक्स', desc: 'ऑटो, वाणिज्यिक वाहन, डिलीवरी सेवाएँ' },
-    { id: 'tourism', label: '🏨 पर्यटन एवं आतिथ्य', desc: 'होमस्टे, रेस्टोरेंट, ट्रैवल एजेंसी' },
-    { id: 'handicrafts', label: '🧵 हस्तशिल्प एवं कारीगरी', desc: 'दर्जी, बढ़ई, लोहार, बुनकर' },
-    { id: 'healthcare', label: '🩺 स्वास्थ्य सेवाएँ', desc: 'क्लिनिक, फार्मेसी, जाँच प्रयोगशाला' },
-    { id: 'services', label: '🛠️ अन्य सेवाएँ', desc: 'सैलून, सेवा केंद्र और अन्य कार्य' }
-  ] : [
-    { id: 'agriculture_allied', label: '🌾 Agriculture & Allied Activities', desc: 'Dairy, Poultry, Fisheries, Horticulture' }, { id: 'manufacturing', label: '🏭 Manufacturing', desc: 'Factory, Product Fabrication, Processing Unit' }, { id: 'retail_trading', label: '🛒 Retail & Trading', desc: 'Grocery Shop, Garments Store, Retail Store' }, { id: 'food_processing', label: '🍲 Food Processing', desc: 'Pickle, Papad, Bakery, Packaged Food, Juice' }, { id: 'tech_it', label: '💻 Technology / IT', desc: 'Software, Mobile Repair, Digital Services' }, { id: 'transport', label: '🚚 Transport & Logistics', desc: 'Auto, Commercial Vehicle, Delivery Services' }, { id: 'tourism', label: '🏨 Tourism & Hospitality', desc: 'Homestay, Restaurant, Travel Agency' }, { id: 'handicrafts', label: '🧵 Handicrafts & Artisan Work', desc: 'Tailor, Carpenter, Blacksmith, Weaver' }, { id: 'healthcare', label: '🩺 Healthcare Services', desc: 'Clinic, Pharmacy, Diagnostic Lab, Therapy' }, { id: 'services', label: '🛠️ Other Services', desc: 'Salon, Service Center, Beauty Parlor, Other' }
+  // Business Field Options (English source + Hindi original; other languages via runtime translation)
+  const BUSINESS_FIELDS = [
+    { id: 'agriculture_allied', emoji: '🌾', label: tr('Agriculture & Allied Activities', 'कृषि एवं संबद्ध गतिविधियाँ'), desc: tr('Dairy, Poultry, Fisheries, Horticulture', 'डेयरी, पोल्ट्री, मत्स्य पालन, बागवानी') },
+    { id: 'manufacturing', emoji: '🏭', label: tr('Manufacturing', 'विनिर्माण'), desc: tr('Factory, Product Fabrication, Processing Unit', 'कारखाना, उत्पाद निर्माण, प्रसंस्करण इकाई') },
+    { id: 'retail_trading', emoji: '🛒', label: tr('Retail & Trading', 'खुदरा एवं व्यापार'), desc: tr('Grocery Shop, Garments Store, Retail Store', 'किराना, वस्त्र दुकान, खुदरा स्टोर') },
+    { id: 'food_processing', emoji: '🍲', label: tr('Food Processing', 'खाद्य प्रसंस्करण'), desc: tr('Pickle, Papad, Bakery, Packaged Food, Juice', 'अचार, पापड़, बेकरी, पैकेज्ड खाद्य') },
+    { id: 'tech_it', emoji: '💻', label: tr('Technology / IT', 'तकनीक एवं आईटी'), desc: tr('Software, Mobile Repair, Digital Services', 'सॉफ्टवेयर, मोबाइल मरम्मत, डिजिटल सेवाएँ') },
+    { id: 'transport', emoji: '🚚', label: tr('Transport & Logistics', 'परिवहन एवं लॉजिस्टिक्स'), desc: tr('Auto, Commercial Vehicle, Delivery Services', 'ऑटो, वाणिज्यिक वाहन, डिलीवरी सेवाएँ') },
+    { id: 'tourism', emoji: '🏨', label: tr('Tourism & Hospitality', 'पर्यटन एवं आतिथ्य'), desc: tr('Homestay, Restaurant, Travel Agency', 'होमस्टे, रेस्टोरेंट, ट्रैवल एजेंसी') },
+    { id: 'handicrafts', emoji: '🧵', label: tr('Handicrafts & Artisan Work', 'हस्तशिल्प एवं कारीगरी'), desc: tr('Tailor, Carpenter, Blacksmith, Weaver', 'दर्जी, बढ़ई, लोहार, बुनकर') },
+    { id: 'healthcare', emoji: '🩺', label: tr('Healthcare Services', 'स्वास्थ्य सेवाएँ'), desc: tr('Clinic, Pharmacy, Diagnostic Lab, Therapy', 'क्लिनिक, फार्मेसी, जाँच प्रयोगशाला') },
+    { id: 'services', emoji: '🛠️', label: tr('Other Services', 'अन्य सेवाएँ'), desc: tr('Salon, Service Center, Beauty Parlor, Other', 'सैलून, सेवा केंद्र और अन्य कार्य') }
   ];
 
   // Business Status Options
-  const BUSINESS_STATUS_OPTIONS = isHindi ? [
-    { id: 'new', label: '💡 नया व्यवसाय शुरू करना है', desc: 'नया उद्यम शुरू करने की योजना' },
-    { id: 'existing', label: '🏪 मेरा व्यवसाय पहले से है', desc: 'चल रही दुकान या उत्पादन इकाई' },
-    { id: 'expansion', label: '📈 व्यवसाय का विस्तार करना है', desc: 'नई मशीनरी, शाखा या कार्यशील पूंजी' }
-  ] : [
-    { id: 'new', label: '💡 Want to start a new business', desc: 'Initial idea or setting up a new enterprise' },
-    { id: 'existing', label: '🏪 I have an existing business', desc: 'Running an established shop or factory unit' },
-    { id: 'expansion', label: '📈 Want to expand my business', desc: 'New machinery, new branch, or working capital' }
+  const BUSINESS_STATUS_OPTIONS = [
+    { id: 'new', emoji: '💡', label: tr('Want to start a new business', 'नया व्यवसाय शुरू करना है'), desc: tr('Initial idea or setting up a new enterprise', 'नया उद्यम शुरू करने की योजना') },
+    { id: 'existing', emoji: '🏪', label: tr('I have an existing business', 'मेरा व्यवसाय पहले से है'), desc: tr('Running an established shop or factory unit', 'चल रही दुकान या उत्पादन इकाई') },
+    { id: 'expansion', emoji: '📈', label: tr('Want to expand my business', 'व्यवसाय का विस्तार करना है'), desc: tr('New machinery, new branch, or working capital', 'नई मशीनरी, शाखा या कार्यशील पूंजी') }
+  ];
+
+  // Reservation / Social Category Options
+  const SOCIAL_CATEGORIES = [
+    { id: 'general', label: tr('General', 'सामान्य') },
+    { id: 'obc', label: tr('Other Backward Classes (OBC)', 'अन्य पिछड़ा वर्ग (OBC)') },
+    { id: 'sc', label: tr('Scheduled Caste (SC)', 'अनुसूचित जाति (SC)') },
+    { id: 'st', label: tr('Scheduled Tribe (ST)', 'अनुसूचित जनजाति (ST)') },
+    { id: 'ews', label: tr('Economically Weaker Section (EWS)', 'आर्थिक रूप से कमजोर वर्ग (EWS)') },
+    { id: 'minorities', label: tr('Minority Communities', 'अल्पसंख्यक समुदाय') }
   ];
 
   // Category Options
-  const CATEGORY_OPTIONS = isHindi ? [
-    { id: 'male', label: '👨 पुरुष' }, { id: 'female', label: '👩 महिला' }, { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' }, { id: 'pwd', label: '♿ दिव्यांगजन (PwD)' }, { id: 'other', label: '⚧ अन्य' }
-  ] : [
-    { id: 'male', label: '👨 Male' },
-    { id: 'female', label: '👩 Female' },
-    { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' },
-    { id: 'pwd', label: '♿ Person with Disability (PwD)' },
-    { id: 'other', label: '⚧ Other' }
+  const CATEGORY_OPTIONS = [
+    { id: 'male', emoji: '👨', label: tr('Male', 'पुरुष') },
+    { id: 'female', emoji: '👩', label: tr('Female', 'महिला') },
+    { id: 'lgbtq', emoji: '🏳️‍🌈', label: 'LGBTQ+' },
+    { id: 'pwd', emoji: '♿', label: tr('Person with Disability (PwD)', 'दिव्यांगजन (PwD)') },
+    { id: 'other', emoji: '⚧', label: tr('Other', 'अन्य') }
   ];
 
   const handleSelectField = (fieldId) => {
@@ -109,6 +109,14 @@ export default function BusinessFlow({
     else setStep(6);
   };
 
+  const handleSelectSocialCategory = (catId) => {
+    const updated = { ...criteria, social_category: catId };
+    setCriteria(updated);
+    const { pool, lastFilteredFactor } = filterBusinessSchemes(SCHEMES, updated);
+    if (pool.length === 0) onNoSchemesFound(lastFilteredFactor, updated);
+    else setStep(7);
+  };
+
   const handleSelectGender = (genderId) => {
     const updated = { ...criteria, gender: genderId };
     setCriteria(updated);
@@ -141,7 +149,7 @@ export default function BusinessFlow({
           </button>
           
           <div className="bg-amber-100 border border-amber-300 text-gov-navy text-sm font-black px-3 py-1 rounded-full flex items-center gap-1.5">
-            <span>{t('step')} {step} {t('of')} 6</span>
+            <span>{t('step')} {step} {t('of')} 7</span>
           </div>
 
           <div className="bg-emerald-100 border border-emerald-300 text-emerald-950 text-sm font-black px-3 py-1 rounded-full">
@@ -152,7 +160,7 @@ export default function BusinessFlow({
         <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
           <div 
             className="bg-gov-saffron h-full transition-all duration-300 rounded-full"
-            style={{ width: `${(step / 6) * 100}%` }}
+            style={{ width: `${(step / 7) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -175,10 +183,10 @@ export default function BusinessFlow({
                   criteria.field === item.id ? 'gov-card-active' : ''
                 }`}
               >
-                <div className="text-3xl shrink-0 mt-0.5">{item.label.split(' ')[0]}</div>
+                <div className="text-3xl shrink-0 mt-0.5">{item.emoji}</div>
                 <div className="space-y-1">
                   <div className="text-lg font-extrabold text-gov-navy leading-snug">
-                    {item.label.substring(item.label.indexOf(' ') + 1)}
+                    {item.label}
                   </div>
                   <div className="text-xs text-slate-600 font-normal">
                     {item.desc}
@@ -203,7 +211,7 @@ export default function BusinessFlow({
             <Search className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder={isHindi ? 'राज्य खोजें...' : 'Search state...'}
+              placeholder={tr('Search state...', 'राज्य खोजें...')}
               value={stateSearchQuery}
               onChange={(e) => setStateSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 border-2 border-slate-300 rounded-xl font-bold text-lg focus:border-gov-navy focus:outline-none"
@@ -225,7 +233,7 @@ export default function BusinessFlow({
                 >
                   <div className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-gov-saffron shrink-0" />
-                    <span className="text-lg">{isHindi ? s.name_hi : s.name}</span>
+                    <span className="text-lg">{tr(s.name, s.name_hi)}</span>
                   </div>
                   {isSelected && <Check className="w-5 h-5 text-gov-saffron font-bold" />}
                 </button>
@@ -272,14 +280,14 @@ export default function BusinessFlow({
 
           <div className="bg-white p-4 rounded-xl border-2 border-slate-200 space-y-3">
             <label className="text-sm font-bold text-slate-800">
-              {isHindi ? 'सटीक वार्षिक आय दर्ज करें (₹):' : 'Enter Exact Amount (₹):'}
+              {tr('Enter Exact Amount (₹):', 'सटीक वार्षिक आय दर्ज करें (₹):')}
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
                   type="number"
-                  placeholder={isHindi ? 'उदा. 250000' : 'e.g. 250000'}
+                  placeholder={tr('e.g. 250000', 'उदा. 250000')}
                   value={customIncomeInput}
                   onChange={(e) => setCustomIncomeInput(e.target.value)}
                   className="w-full pl-8 pr-4 py-3 border-2 border-slate-300 rounded-lg text-lg font-bold focus:border-gov-navy focus:outline-none"
@@ -292,7 +300,7 @@ export default function BusinessFlow({
                 disabled={!customIncomeInput}
                 className="gov-btn-primary px-6 w-full sm:w-auto"
               >
-                {isHindi ? 'आगे बढ़ें' : 'Next'}
+                {tr('Next', 'आगे बढ़ें')}
               </button>
             </div>
           </div>
@@ -317,10 +325,10 @@ export default function BusinessFlow({
                   criteria.business_status === item.id ? 'gov-card-active' : ''
                 }`}
               >
-                <div className="text-3xl shrink-0">{item.label.split(' ')[0]}</div>
+                <div className="text-3xl shrink-0">{item.emoji}</div>
                 <div className="space-y-1 flex-1">
                   <div className="text-xl font-extrabold text-gov-navy">
-                    {item.label.substring(item.label.indexOf(' ') + 1)}
+                    {item.label}
                   </div>
                   <div className="text-sm text-slate-600 font-normal">
                     {item.desc}
@@ -343,11 +351,11 @@ export default function BusinessFlow({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { label: isHindi ? '₹1 लाख तक' : 'Up to ₹1 Lakh', val: 100000 },
-              { label: isHindi ? '₹1–5 लाख' : '₹1–5 Lakhs', val: 500000 },
-              { label: isHindi ? '₹5–10 लाख' : '₹5–10 Lakhs', val: 1000000 },
-              { label: isHindi ? '₹10–25 लाख' : '₹10–25 Lakhs', val: 2500000 },
-              { label: isHindi ? '₹25 लाख से अधिक' : 'Above ₹25 Lakhs', val: 5000000 }
+              { label: tr('Up to ₹1 Lakh', '₹1 लाख तक'), val: 100000 },
+              { label: tr('₹1–5 Lakhs', '₹1–5 लाख'), val: 500000 },
+              { label: tr('₹5–10 Lakhs', '₹5–10 लाख'), val: 1000000 },
+              { label: tr('₹10–25 Lakhs', '₹10–25 लाख'), val: 2500000 },
+              { label: tr('Above ₹25 Lakhs', '₹25 लाख से अधिक'), val: 5000000 }
             ].map((item) => (
               <button
                 key={item.label}
@@ -366,14 +374,14 @@ export default function BusinessFlow({
 
           <div className="bg-white p-4 rounded-xl border-2 border-slate-200 space-y-3">
             <label className="text-sm font-bold text-slate-800">
-              {isHindi ? 'आवश्यक सटीक वित्तीय सहायता दर्ज करें (₹):' : 'Enter Exact Financial Need (₹):'}
+              {tr('Enter Exact Financial Need (₹):', 'आवश्यक सटीक वित्तीय सहायता दर्ज करें (₹):')}
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
                   type="number"
-                  placeholder={isHindi ? 'उदा. 1000000' : 'e.g. 1000000'}
+                  placeholder={tr('e.g. 1000000', 'उदा. 1000000')}
                   value={customNeedInput}
                   onChange={(e) => setCustomNeedInput(e.target.value)}
                   className="w-full pl-8 pr-4 py-3 border-2 border-slate-300 rounded-lg text-lg font-bold focus:border-gov-navy focus:outline-none"
@@ -386,15 +394,46 @@ export default function BusinessFlow({
                 disabled={!customNeedInput}
                 className="gov-btn-primary px-6 w-full sm:w-auto"
               >
-                {isHindi ? 'आगे बढ़ें' : 'Next'}
+                {tr('Next', 'आगे बढ़ें')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* STEP 6: CATEGORY SELECTION */}
+      {/* STEP 6: RESERVATION / SOCIAL CATEGORY */}
       {step === 6 && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gov-navy font-sans">
+              {tr('Select your reservation category', 'अपनी आरक्षण श्रेणी चुनें')}
+            </h2>
+            <p className="text-sm text-slate-700 font-semibold bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+              {tr('Many schemes offer extra benefits or higher subsidy for SC, ST, OBC, EWS and minority applicants.', 'कई योजनाएँ अनुसूचित जाति, जनजाति, OBC, EWS और अल्पसंख्यक आवेदकों को अतिरिक्त लाभ या अधिक सब्सिडी देती हैं।')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {SOCIAL_CATEGORIES.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleSelectSocialCategory(item.id)}
+                className={`p-4 rounded-xl border-2 font-extrabold text-lg flex items-center justify-between text-left min-h-[56px] ${
+                  criteria.social_category === item.id
+                    ? 'bg-amber-100 border-gov-saffron text-gov-navy shadow'
+                    : 'bg-white border-slate-200 hover:border-gov-navy text-slate-900'
+                }`}
+              >
+                <span>🏷️ {item.label}</span>
+                <Check className="w-5 h-5 opacity-40" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* STEP 7: CATEGORY SELECTION */}
+      {step === 7 && (
         <div className="space-y-4 animate-in fade-in duration-200">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gov-navy font-sans">

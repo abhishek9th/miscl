@@ -2,17 +2,16 @@ import React from 'react';
 import { ArrowRight, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { useEffect, useState } from 'react';
-import { getTranslation } from '../data/translations';
+import { useI18n } from '../i18n';
 
-export default function ResultsScreen({ 
-  schemes, 
-  userCriteria, 
-  onSelectScheme, 
-  onRestart,
-  currentLang
+export default function ResultsScreen({
+  schemes,
+  userCriteria,
+  onSelectScheme,
+  onRestart
 }) {
+  const { t, tr, trText, lang: currentLang } = useI18n();
   const [speaking, setSpeaking] = useState(false);
-  const t = (key) => getTranslation(currentLang, key);
   const isHindi = currentLang !== 'en';
   const readResults = () => {
     if (speaking) { stopTextAloud(); setSpeaking(false); return; }
@@ -45,7 +44,7 @@ export default function ResultsScreen({
             {schemes.length} {t('matching_schemes')}
           </h2>
           <p className="text-sm text-amber-200">
-            {isHindi ? 'आपकी दी गई जानकारी के आधार पर, ये योजनाएँ आपके लिए उपयुक्त हो सकती हैं:' : 'Based on your input, here are the government schemes you may qualify for:'}
+            {tr('Based on your input, here are the government schemes you may qualify for:', 'आपकी दी गई जानकारी के आधार पर, ये योजनाएँ आपके लिए उपयुक्त हो सकती हैं:')}
           </p>
         </div>
 
@@ -58,7 +57,7 @@ export default function ResultsScreen({
         </button>
         <button onClick={readResults} className="bg-amber-100 hover:bg-amber-200 text-gov-navy border border-amber-300 font-bold py-2.5 px-4 rounded-xl text-sm flex items-center gap-2 shrink-0 transition-colors">
           {speaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          {speaking ? (isHindi ? 'रोकें' : 'Stop') : (isHindi ? 'परिणाम सुनें' : 'Listen to results')}
+          {speaking ? tr('Stop', 'रोकें') : tr('Listen to results', 'परिणाम सुनें')}
         </button>
       </div>
 
@@ -66,9 +65,7 @@ export default function ResultsScreen({
       <div className="space-y-4">
         {schemes.map((scheme) => {
           const isPartial = scheme.isPartialMatch;
-          const schemeTitle = (currentLang === 'hi' || currentLang === 'pa' || currentLang === 'bn' || currentLang === 'ta' || currentLang === 'te' || currentLang === 'mr' || currentLang === 'gu' || currentLang === 'kn' || currentLang === 'ml' || currentLang === 'or' || currentLang === 'ur') 
-            ? (scheme.name_hi || scheme.name) 
-            : scheme.name;
+          const schemeTitle = tr(scheme.name, scheme.name_hi || scheme.name);
 
           return (
             <div 
@@ -94,30 +91,30 @@ export default function ResultsScreen({
 
               {/* Description */}
               <p className="text-base text-slate-700 leading-relaxed">
-                {isHindi ? scheme.description_hi : scheme.description_hi}
+                {trText(scheme.description_hi, 'hi')}
               </p>
 
               {/* Quick Info Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-sm">
                 <div className="flex items-center gap-2 font-bold text-slate-900">
                   <div>
-                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{isHindi ? 'अधिकतम सहायता' : 'Max Assistance'}</div>
-                    <div className="text-gov-navy text-base">{isHindi ? '₹' : 'Up to ₹'}{(scheme.max_financial_assistance / 100000).toFixed(1)} {isHindi ? 'लाख तक' : 'Lakhs'}</div>
+                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{tr('Max Assistance', 'अधिकतम सहायता')}</div>
+                    <div className="text-gov-navy text-base">₹{(scheme.max_financial_assistance / 100000).toFixed(1)} {tr('Lakhs', 'लाख तक')}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 font-bold text-slate-900">
                   <div>
-                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{isHindi ? 'सब्सिडी / ब्याज' : 'Subsidy / Interest'}</div>
-                    <div className="text-emerald-800 text-base">{scheme.subsidy_percentage || scheme.interest_rate}</div>
+                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{tr('Subsidy / Interest', 'सब्सिडी / ब्याज')}</div>
+                    <div className="text-emerald-800 text-base">{trText(scheme.subsidy_percentage || scheme.interest_rate, 'hi')}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 font-bold text-slate-900">
                   <div>
-                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{isHindi ? 'लागू क्षेत्र' : 'Scope'}</div>
+                    <div className="text-[11px] text-slate-500 uppercase font-semibold">{tr('Scope', 'लागू क्षेत्र')}</div>
                     <div className="text-slate-800 text-base">
-                      {scheme.scope === 'central' ? (isHindi ? 'अखिल भारतीय योजना' : 'All India Scheme') : (scheme.states ? scheme.states.join(', ') : (isHindi ? 'राज्य योजना' : 'State Scheme'))}
+                      {scheme.scope === 'central' ? tr('All India Scheme', 'अखिल भारतीय योजना') : (scheme.states ? scheme.states.join(', ') : tr('State Scheme', 'राज्य योजना'))}
                     </div>
                   </div>
                 </div>

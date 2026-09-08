@@ -3,15 +3,15 @@ import { ArrowLeft, Check, Search, MapPin, User } from 'lucide-react';
 import { INDIAN_STATES } from '../services/locationService';
 import { filterStudentSchemes } from '../services/filterService';
 import { SCHEMES } from '../data/schemes';
-import { getTranslation } from '../data/translations';
+import { useI18n } from '../i18n';
 
-export default function StudentFlow({ 
-  userState, 
-  onComplete, 
-  onNoSchemesFound, 
-  onBackToHome,
-  currentLang
+export default function StudentFlow({
+  userState,
+  onComplete,
+  onNoSchemesFound,
+  onBackToHome
 }) {
+  const { t, tr } = useI18n();
   const [step, setStep] = useState(1);
   const [criteria, setCriteria] = useState({
     student_type: '',
@@ -26,62 +26,48 @@ export default function StudentFlow({
   const [stateSearchQuery, setStateSearchQuery] = useState('');
   const [customIncomeInput, setCustomIncomeInput] = useState('');
 
-  const t = (key) => getTranslation(currentLang, key);
-  const isHindi = currentLang !== 'en';
   const { pool: matchingPool, lastFilteredFactor } = filterStudentSchemes(SCHEMES, criteria);
 
   // 1. Student Support Options
-  const SUPPORT_TYPES = isHindi ? [
-    { id: 'scholarship', label: '🎓 छात्रवृत्ति', desc: 'ट्यूशन शुल्क प्रतिपूर्ति और वार्षिक अध्ययन अनुदान' },
-    { id: 'education_loan', label: '💳 शिक्षा ऋण', desc: 'कॉलेज शुल्क और छात्रावास के लिए रियायती बैंक ऋण' },
-    { id: 'coaching_support', label: '📚 निःशुल्क कोचिंग सहायता', desc: 'UPSC, NEET, JEE और बैंकिंग के लिए कोचिंग' },
-    { id: 'hostel_support', label: '🏠 छात्रावास एवं आवास सहायता', desc: 'रहने और भोजन के खर्च में सहायता' },
-    { id: 'overseas', label: '🌍 विदेश में शिक्षा सहायता', desc: 'विदेशी विश्वविद्यालयों में उच्च शिक्षा के लिए सहायता' }
-  ] : [
-    { id: 'scholarship', label: '🎓 Scholarship', desc: 'Tuition fee reimbursement and annual study grant' },
-    { id: 'education_loan', label: '💳 Education Loan', desc: 'Subsidized bank loans for college fees & hostel' },
-    { id: 'coaching_support', label: '📚 Free Coaching Support', desc: 'Free coaching for UPSC, NEET, JEE, Banking' },
-    { id: 'hostel_support', label: '🏠 Hostel & Accommodation Support', desc: 'Covering living and food expenses' },
-    { id: 'overseas', label: '🌍 Overseas Education Support', desc: 'Full funding for master degrees in foreign universities' }
+  const SUPPORT_TYPES = [
+    { id: 'scholarship', emoji: '🎓', label: tr('Scholarship', 'छात्रवृत्ति'), desc: tr('Tuition fee reimbursement and annual study grant', 'ट्यूशन शुल्क प्रतिपूर्ति और वार्षिक अध्ययन अनुदान') },
+    { id: 'education_loan', emoji: '💳', label: tr('Education Loan', 'शिक्षा ऋण'), desc: tr('Subsidized bank loans for college fees & hostel', 'कॉलेज शुल्क और छात्रावास के लिए रियायती बैंक ऋण') },
+    { id: 'coaching_support', emoji: '📚', label: tr('Free Coaching Support', 'निःशुल्क कोचिंग सहायता'), desc: tr('Free coaching for UPSC, NEET, JEE, Banking', 'UPSC, NEET, JEE और बैंकिंग के लिए कोचिंग') },
+    { id: 'hostel_support', emoji: '🏠', label: tr('Hostel & Accommodation Support', 'छात्रावास एवं आवास सहायता'), desc: tr('Covering living and food expenses', 'रहने और भोजन के खर्च में सहायता') },
+    { id: 'overseas', emoji: '🌍', label: tr('Overseas Education Support', 'विदेश में शिक्षा सहायता'), desc: tr('Full funding for master degrees in foreign universities', 'विदेशी विश्वविद्यालयों में उच्च शिक्षा के लिए सहायता') }
   ];
 
   // 2. Education Levels
-  const EDUCATION_LEVELS = isHindi ? [
-    { id: 'school', label: '🏫 स्कूली शिक्षा (कक्षा 1 से 8)' }, { id: 'class_10_12', label: '🎒 कक्षा 9वीं से 12वीं' }, { id: 'undergraduate', label: '🎓 स्नातक (BA, BSc, BCom, BTech, MBBS)' }, { id: 'postgraduate', label: '📜 स्नातकोत्तर (MA, MSc, MTech, MBA)' }, { id: 'professional', label: '🔬 व्यावसायिक पाठ्यक्रम (चिकित्सा, कानून, प्रबंधन)' }, { id: 'phd', label: '📖 डॉक्टरेट / PhD शोध' }, { id: 'overseas', label: '🌍 विदेश में उच्च शिक्षा' }
-  ] : [
-    { id: 'school', label: '🏫 School Education (Classes 1 to 8)' },
-    { id: 'class_10_12', label: '🎒 Classes 9th, 10th, 11th or 12th' },
-    { id: 'undergraduate', label: '🎓 Undergraduate (BA, BSc, BCom, BTech, MBBS)' },
-    { id: 'postgraduate', label: '📜 Postgraduate (MA, MSc, MTech, MBA)' },
-    { id: 'professional', label: '🔬 Professional Course (Medical, Law, Management)' },
-    { id: 'phd', label: '📖 Doctorate / PhD Research' },
-    { id: 'overseas', label: '🌍 Overseas Higher Education' }
+  const EDUCATION_LEVELS = [
+    { id: 'school', label: '🏫 ' + tr('School Education (Classes 1 to 8)', 'स्कूली शिक्षा (कक्षा 1 से 8)') },
+    { id: 'class_10_12', label: '🎒 ' + tr('Classes 9th, 10th, 11th or 12th', 'कक्षा 9वीं से 12वीं') },
+    { id: 'undergraduate', label: '🎓 ' + tr('Undergraduate (BA, BSc, BCom, BTech, MBBS)', 'स्नातक (BA, BSc, BCom, BTech, MBBS)') },
+    { id: 'postgraduate', label: '📜 ' + tr('Postgraduate (MA, MSc, MTech, MBA)', 'स्नातकोत्तर (MA, MSc, MTech, MBA)') },
+    { id: 'professional', label: '🔬 ' + tr('Professional Course (Medical, Law, Management)', 'व्यावसायिक पाठ्यक्रम (चिकित्सा, कानून, प्रबंधन)') },
+    { id: 'phd', label: '📖 ' + tr('Doctorate / PhD Research', 'डॉक्टरेट / PhD शोध') },
+    { id: 'overseas', label: '🌍 ' + tr('Overseas Higher Education', 'विदेश में उच्च शिक्षा') }
   ];
 
   // 3. Course Fields
-  const COURSE_FIELDS = isHindi ? [
-    { id: 'engineering', label: '⚙️ इंजीनियरिंग एवं प्रौद्योगिकी' }, { id: 'medical', label: '🩺 चिकित्सा एवं स्वास्थ्य' }, { id: 'management', label: '📊 प्रबंधन एवं व्यवसाय (MBA)' }, { id: 'arts', label: '🎨 कला एवं मानविकी' }, { id: 'science', label: '🧪 शुद्ध विज्ञान एवं शोध' }, { id: 'law', label: '⚖️ कानून एवं न्यायपालिका' }, { id: 'agriculture', label: '🌾 कृषि एवं संबद्ध विज्ञान' }, { id: 'other', label: '📚 अन्य पाठ्यक्रम / सामान्य अध्ययन' }
-  ] : [
-    { id: 'engineering', label: '⚙️ Engineering & Technology' },
-    { id: 'medical', label: '🩺 Medical & Healthcare' },
-    { id: 'management', label: '📊 Management & Business (MBA)' },
-    { id: 'arts', label: '🎨 Arts & Humanities' },
-    { id: 'science', label: '🧪 Pure Sciences & Research' },
-    { id: 'law', label: '⚖️ Law & Judiciary' },
-    { id: 'agriculture', label: '🌾 Agriculture & Allied Sciences' },
-    { id: 'other', label: '📚 Other Courses / General Studies' }
+  const COURSE_FIELDS = [
+    { id: 'engineering', label: '⚙️ ' + tr('Engineering & Technology', 'इंजीनियरिंग एवं प्रौद्योगिकी') },
+    { id: 'medical', label: '🩺 ' + tr('Medical & Healthcare', 'चिकित्सा एवं स्वास्थ्य') },
+    { id: 'management', label: '📊 ' + tr('Management & Business (MBA)', 'प्रबंधन एवं व्यवसाय (MBA)') },
+    { id: 'arts', label: '🎨 ' + tr('Arts & Humanities', 'कला एवं मानविकी') },
+    { id: 'science', label: '🧪 ' + tr('Pure Sciences & Research', 'शुद्ध विज्ञान एवं शोध') },
+    { id: 'law', label: '⚖️ ' + tr('Law & Judiciary', 'कानून एवं न्यायपालिका') },
+    { id: 'agriculture', label: '🌾 ' + tr('Agriculture & Allied Sciences', 'कृषि एवं संबद्ध विज्ञान') },
+    { id: 'other', label: '📚 ' + tr('Other Courses / General Studies', 'अन्य पाठ्यक्रम / सामान्य अध्ययन') }
   ];
 
   // 6. Social Categories
-  const CATEGORIES = isHindi ? [
-    { id: 'general', label: 'सामान्य' }, { id: 'obc', label: 'अन्य पिछड़ा वर्ग (OBC)' }, { id: 'sc', label: 'अनुसूचित जाति (SC)' }, { id: 'st', label: 'अनुसूचित जनजाति (ST)' }, { id: 'ews', label: 'आर्थिक रूप से कमजोर वर्ग (EWS)' }, { id: 'minorities', label: 'अल्पसंख्यक समुदाय' }
-  ] : [
-    { id: 'general', label: 'General' },
-    { id: 'obc', label: 'Other Backward Classes (OBC)' },
-    { id: 'sc', label: 'Scheduled Caste (SC)' },
-    { id: 'st', label: 'Scheduled Tribe (ST)' },
-    { id: 'ews', label: 'Economically Weaker Section (EWS)' },
-    { id: 'minorities', label: 'Minority Communities' }
+  const CATEGORIES = [
+    { id: 'general', label: tr('General', 'सामान्य') },
+    { id: 'obc', label: tr('Other Backward Classes (OBC)', 'अन्य पिछड़ा वर्ग (OBC)') },
+    { id: 'sc', label: tr('Scheduled Caste (SC)', 'अनुसूचित जाति (SC)') },
+    { id: 'st', label: tr('Scheduled Tribe (ST)', 'अनुसूचित जनजाति (ST)') },
+    { id: 'ews', label: tr('Economically Weaker Section (EWS)', 'आर्थिक रूप से कमजोर वर्ग (EWS)') },
+    { id: 'minorities', label: tr('Minority Communities', 'अल्पसंख्यक समुदाय') }
   ];
 
   const handleSelectSupportType = (typeId) => {
@@ -198,10 +184,10 @@ export default function StudentFlow({
                   criteria.student_type === item.id ? 'gov-card-active' : ''
                 }`}
               >
-                <div className="text-3xl shrink-0">{item.label.split(' ')[0]}</div>
+                <div className="text-3xl shrink-0">{item.emoji}</div>
                 <div className="space-y-1 flex-1">
                   <div className="text-xl font-extrabold text-gov-navy">
-                    {item.label.substring(item.label.indexOf(' ') + 1)}
+                    {item.label}
                   </div>
                   <div className="text-sm text-slate-600 font-normal">
                     {item.desc}
@@ -282,7 +268,7 @@ export default function StudentFlow({
             <Search className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder={isHindi ? 'राज्य खोजें...' : 'Search state...'}
+              placeholder={tr('Search state...', 'राज्य खोजें...')}
               value={stateSearchQuery}
               onChange={(e) => setStateSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 border-2 border-slate-300 rounded-xl font-bold text-lg focus:border-gov-navy focus:outline-none"
@@ -304,7 +290,7 @@ export default function StudentFlow({
                 >
                   <div className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-gov-navy shrink-0" />
-                    <span className="text-lg">{isHindi ? s.name_hi : s.name}</span>
+                    <span className="text-lg">{tr(s.name, s.name_hi)}</span>
                   </div>
                   {isSelected && <Check className="w-5 h-5 text-gov-navy font-bold" />}
                 </button>
@@ -326,9 +312,9 @@ export default function StudentFlow({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { label: t('less_than_1lakh'), val: 100000 },
-              { label: isHindi ? '₹1–2.5 लाख' : '₹1–2.5 Lakhs', val: 250000 },
-              { label: isHindi ? '₹2.5–4.5 लाख' : '₹2.5–4.5 Lakhs', val: 450000 },
-              { label: isHindi ? '₹4.5–8 लाख' : '₹4.5–8 Lakhs', val: 800000 },
+              { label: tr('₹1–2.5 Lakhs', '₹1–2.5 लाख'), val: 250000 },
+              { label: tr('₹2.5–4.5 Lakhs', '₹2.5–4.5 लाख'), val: 450000 },
+              { label: tr('₹4.5–8 Lakhs', '₹4.5–8 लाख'), val: 800000 },
               { label: t('above_8lakh'), val: 1200000 }
             ].map((item) => (
               <button
@@ -348,14 +334,14 @@ export default function StudentFlow({
 
           <div className="bg-white p-4 rounded-xl border-2 border-slate-200 space-y-3">
             <label className="text-sm font-bold text-slate-800">
-              {isHindi ? 'सटीक पारिवारिक आय दर्ज करें (₹):' : 'Enter Exact Family Income (₹):'}
+              {tr('Enter Exact Family Income (₹):', 'सटीक पारिवारिक आय दर्ज करें (₹):')}
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3.5 top-3 text-lg font-bold text-slate-500">₹</span>
                 <input
                   type="number"
-                  placeholder={isHindi ? 'उदा. 200000' : 'e.g. 200000'}
+                  placeholder={tr('e.g. 200000', 'उदा. 200000')}
                   value={customIncomeInput}
                   onChange={(e) => setCustomIncomeInput(e.target.value)}
                   className="w-full pl-8 pr-4 py-3 border-2 border-slate-300 rounded-lg text-lg font-bold focus:border-gov-navy focus:outline-none"
@@ -368,7 +354,7 @@ export default function StudentFlow({
                 disabled={!customIncomeInput}
                 className="gov-btn-primary px-6 w-full sm:w-auto"
               >
-                {isHindi ? 'आगे बढ़ें' : 'Next'}
+                {tr('Next', 'आगे बढ़ें')}
               </button>
             </div>
           </div>
@@ -414,11 +400,11 @@ export default function StudentFlow({
 
           <div className="space-y-3">
             {[
-              { id: 'male', label: isHindi ? '👨 छात्र' : '👨 Male Student' },
-              { id: 'female', label: isHindi ? '👩 छात्रा' : '👩 Female Student' },
+              { id: 'male', label: '👨 ' + tr('Male Student', 'छात्र') },
+              { id: 'female', label: '👩 ' + tr('Female Student', 'छात्रा') },
               { id: 'lgbtq', label: '🏳️‍🌈 LGBTQ+' },
-              { id: 'pwd', label: isHindi ? '♿ दिव्यांग छात्र/छात्रा (PwD)' : '♿ Student with Disability (PwD)' },
-              { id: 'other', label: isHindi ? '⚧ अन्य' : '⚧ Other' }
+              { id: 'pwd', label: '♿ ' + tr('Student with Disability (PwD)', 'दिव्यांग छात्र/छात्रा (PwD)') },
+              { id: 'other', label: '⚧ ' + tr('Other', 'अन्य') }
             ].map((item) => (
               <button
                 key={item.id}

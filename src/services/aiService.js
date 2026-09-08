@@ -16,7 +16,7 @@ export async function processNaturalLanguageQuery(queryText, currentProfile = {}
   // Retry logic with exponential backoff
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch('/api/analyze-user', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/analyze-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: queryText, currentProfile, language }),

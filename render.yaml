@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: schemesetu
+    runtime: node
+    plan: free
+    # Installs deps and builds the frontend (outputs to dist/), which the
+    # Express server then serves alongside the /api routes.
+    buildCommand: npm install && npm run build
+    startCommand: npm run server
+    envVars:
+      # Do NOT put the real key here. Set it in the Render dashboard
+      # (Environment tab) so it never lands in git.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: NODE_VERSION
+        value: 20

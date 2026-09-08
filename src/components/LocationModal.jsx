@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { MapPin, Navigation, Search, Check, ChevronDown, Building } from 'lucide-react';
 import { detectUserLocation, INDIAN_STATES } from '../services/locationService';
+import { useI18n } from '../i18n';
 
-export default function LocationModal({ onLocationGranted, onLocationDenied, currentLang }) {
+export default function LocationModal({ onLocationGranted, onLocationDenied }) {
+  const { tr, trText } = useI18n();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [showManualDropdown, setShowManualDropdown] = useState(false);
   const [selectedManualState, setSelectedManualState] = useState('Uttar Pradesh');
   const [searchStateQuery, setSearchStateQuery] = useState('');
-
-  const isHindi = currentLang === 'hi';
 
   const handleGrantPermission = async () => {
     setLoading(true);
@@ -19,7 +19,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
       onLocationGranted(locData);
     } catch (err) {
       console.warn("Location permission denied or failed:", err);
-      setErrorMsg(isHindi ? "स्थान का पता नहीं चल सका। कृपया नीचे से अपना राज्य चुनें।" : "Could not detect location. Please select your state manually below.");
+      setErrorMsg(tr('Could not detect location. Please select your state manually below.', 'स्थान का पता नहीं चल सका। कृपया नीचे से अपना राज्य चुनें।'));
       setShowManualDropdown(true);
     } finally {
       setLoading(false);
@@ -49,22 +49,18 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
             <MapPin className="w-9 h-9 text-amber-400 animate-bounce" />
           </div>
           <h2 className="text-2xl font-extrabold font-sans">
-            {isHindi ? "राज्य एवं स्थान का चयन" : "Select Location & State"}
+            {tr('Select Location & State', 'राज्य एवं स्थान का चयन')}
           </h2>
-          <p className="text-xs text-amber-200 mt-1">Location Preference</p>
+          <p className="text-xs text-amber-200 mt-1">{tr('Location Preference', 'स्थान वरीयता')}</p>
         </div>
 
         {/* Modal Body */}
         <div className="p-5 text-center space-y-4">
           <p className="text-lg font-bold text-slate-900 leading-relaxed">
-            {isHindi 
-              ? "“हम आपके राज्य के अनुसार उपलब्ध सरकारी योजनाएँ दिखाना चाहते हैं।”"
-              : "“We want to show government schemes available according to your state.”"}
+            {tr('“We want to show government schemes available according to your state.”', '“हम आपके राज्य के अनुसार उपलब्ध सरकारी योजनाएँ दिखाना चाहते हैं।”')}
           </p>
           <p className="text-xs text-slate-600">
-            {isHindi 
-              ? "स्थान की अनुमति देने या राज्य चुनने से आपके राज्य की विशेष योजनाएं दिखाई जाएंगी।"
-              : "Allowing location or selecting your state ensures you see state-specific government benefits."}
+            {tr('Allowing location or selecting your state ensures you see state-specific government benefits.', 'स्थान की अनुमति देने या राज्य चुनने से आपके राज्य की विशेष योजनाएं दिखाई जाएंगी।')}
           </p>
 
           {errorMsg && (
@@ -82,11 +78,11 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
                 className="gov-btn-accent w-full py-4 text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-orange-700"
               >
                 {loading ? (
-                  <span>{isHindi ? "स्थान खोजा जा रहा है..." : "Detecting Location..."}</span>
+                  <span>{tr('Detecting Location...', 'स्थान खोजा जा रहा है...')}</span>
                 ) : (
                   <>
                     <Navigation className="w-6 h-6" />
-                    <span>{isHindi ? "स्थान की अनुमति दें" : "Allow Location Permission"}</span>
+                    <span>{tr('Allow Location Permission', 'स्थान की अनुमति दें')}</span>
                   </>
                 )}
               </button>
@@ -94,7 +90,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
               <div className="relative flex py-1 items-center">
                 <div className="flex-grow border-t border-slate-300"></div>
                 <span className="flex-shrink mx-3 text-xs text-slate-400 font-bold uppercase">
-                  {isHindi ? "अथवा" : "OR"}
+                  {tr('OR', 'अथवा')}
                 </span>
                 <div className="flex-grow border-t border-slate-300"></div>
               </div>
@@ -105,7 +101,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
                 className="gov-btn-secondary w-full py-3.5 text-lg border-slate-400 text-slate-800 hover:bg-slate-100 flex items-center justify-center gap-2"
               >
                 <Building className="w-5 h-5 text-gov-navy" />
-                <span>{isHindi ? "मैन्युअल रूप से राज्य चुनें" : "Select State Manually"}</span>
+                <span>{tr('Select State Manually', 'मैन्युअल रूप से राज्य चुनें')}</span>
               </button>
             </div>
           ) : (
@@ -113,7 +109,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
             <div className="space-y-3 pt-1 text-left animate-in fade-in duration-150">
               <label className="text-sm font-extrabold text-gov-navy flex items-center gap-1.5">
                 <Building className="w-4 h-4 text-gov-saffron" />
-                <span>{isHindi ? "अपना राज्य चुनें (Select State):" : "Select Your State:"}</span>
+                <span>{tr('Select Your State:', 'अपना राज्य चुनें:')}</span>
               </label>
 
               {/* State Search Input inside dropdown */}
@@ -121,7 +117,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
                 <Search className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
                 <input
                   type="text"
-                  placeholder={isHindi ? "राज्य खोजें (Filter states)..." : "Search state..."}
+                  placeholder={tr('Search state...', 'राज्य खोजें...')}
                   value={searchStateQuery}
                   onChange={(e) => setSearchStateQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 border-2 border-slate-300 rounded-lg text-sm font-bold focus:border-gov-navy focus:outline-none"
@@ -142,7 +138,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
                           : 'bg-white text-slate-800 hover:bg-slate-200 border border-slate-200'
                       }`}
                     >
-                      <span>{s.name} ({s.name_hi})</span>
+                      <span>{tr(s.name, s.name_hi)}</span>
                       {isSelected && <Check className="w-4 h-4 text-amber-400" />}
                     </button>
                   );
@@ -156,14 +152,14 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
                   className="gov-btn-accent w-full py-3.5 text-lg flex items-center justify-center gap-2 shadow"
                 >
                   <Check className="w-5 h-5" />
-                  <span>{isHindi ? "चयनित राज्य की पुष्टि करें" : "Confirm State Selection"}</span>
+                  <span>{tr('Confirm State Selection', 'चयनित राज्य की पुष्टि करें')}</span>
                 </button>
 
                 <button
                   onClick={() => setShowManualDropdown(false)}
                   className="text-xs text-slate-500 hover:text-slate-800 font-bold underline w-full text-center py-1"
                 >
-                  ← {isHindi ? "वापस ऑटो-लोकेशन पर जाएँ" : "Back to Auto-Location"}
+                  ← {tr('Back to Auto-Location', 'वापस ऑटो-लोकेशन पर जाएँ')}
                 </button>
               </div>
             </div>
@@ -172,7 +168,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied, cur
 
         {/* Footer info */}
         <div className="bg-slate-50 px-4 py-2 border-t border-slate-200 text-center text-xs text-slate-500">
-          🔒 {isHindi ? "आपकी गोपनीयता सुरक्षित है। हम कोई व्यक्तिगत डेटा रिकॉर्ड नहीं करते।" : "Your privacy is safe. We do not store personal data."}
+          🔒 {tr('Your privacy is safe. We do not store personal data.', 'आपकी गोपनीयता सुरक्षित है। हम कोई व्यक्तिगत डेटा रिकॉर्ड नहीं करते।')}
         </div>
       </div>
     </div>

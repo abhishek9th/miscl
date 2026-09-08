@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users } from 'lucide-react';
-import { getTranslation } from '../data/translations';
+import { useI18n } from '../i18n';
 
 const GOVERNMENT_NOTICES = [
   {
@@ -25,14 +25,12 @@ const GOVERNMENT_NOTICES = [
   },
 ];
 
-export default function HomeScreen({ 
-  currentLang, 
-  userState, 
+export default function HomeScreen({
+  userState,
   onSelectFlow,
   onBrowseAllSchemes
 }) {
-  const t = (key) => getTranslation(currentLang, key);
-  const isHindi = currentLang === 'hi';
+  const { t, tr, trText, lang } = useI18n();
 
   // EMI Calculator State
   const [loanAmount, setLoanAmount] = useState('');
@@ -93,13 +91,11 @@ export default function HomeScreen({
           <div className="max-w-xl space-y-5">
             <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0b2341] font-sans leading-tight tracking-tight">
-                {isHindi ? "सरकारी योजनाएँ," : "Government Schemes,"} <br />
-                <span className="text-[#15803D]">{isHindi ? "आपके विकास के लिए" : "For Your Development"}</span>
+                {tr('Government Schemes,', 'सरकारी योजनाएँ,')} <br />
+                <span className="text-[#15803D]">{tr('For Your Development', 'आपके विकास के लिए')}</span>
               </h1>
               <p className="text-base sm:text-lg text-slate-700 font-medium leading-relaxed">
-                {isHindi 
-                  ? "व्यवसाय, शिक्षा, कौशल और रोजगार से जुड़ी सरकारी योजनाओं की जानकारी अब आपके हाथों में – सरल, तेज और आपकी भाषा में।"
-                  : "Empowering every citizen with fast, simple, and direct access to business, education, skill, and employment government benefits."}
+                {tr('Information on government schemes for business, education, skills and employment is now in your hands — simple, fast, and in your language.', 'व्यवसाय, शिक्षा, कौशल और रोजगार से जुड़ी सरकारी योजनाओं की जानकारी अब आपके हाथों में – सरल, तेज और आपकी भाषा में।')}
               </p>
             </div>
 
@@ -109,9 +105,7 @@ export default function HomeScreen({
                 👥
               </div>
               <div className="text-sm font-extrabold text-[#78350F] leading-snug">
-                {isHindi 
-                  ? "विशेष रूप से अनुसूचित जाति, वंचित वर्गों और सभी पात्र नागरिकों के लिए"
-                  : "Specially designed for SC, marginalized communities, and all eligible citizens."}
+                {tr('Specially for Scheduled Castes, marginalized communities, and all eligible citizens', 'विशेष रूप से अनुसूचित जाति, वंचित वर्गों और सभी पात्र नागरिकों के लिए')}
               </div>
             </div>
 
@@ -120,14 +114,14 @@ export default function HomeScreen({
                 onClick={() => onSelectFlow('business')}
                 className="inline-flex items-center gap-2 bg-[#075C9C] hover:bg-[#064A7D] text-white font-extrabold px-5 py-3 rounded-md shadow transition-colors"
               >
-                {isHindi ? 'अपनी उपयुक्त योजनाएँ खोजें' : 'Find Suitable Schemes'}
+                {tr('Find Suitable Schemes', 'अपनी उपयुक्त योजनाएँ खोजें')}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onBrowseAllSchemes}
                 className="inline-flex items-center gap-2 text-[#0B3D71] hover:text-[#075C9C] font-extrabold underline underline-offset-4"
               >
-                {isHindi ? 'सभी सरकारी योजनाएँ देखें' : 'Browse all government schemes'}
+                {tr('Browse all government schemes', 'सभी सरकारी योजनाएँ देखें')}
                 <ExternalLink className="w-4 h-4" />
               </button>
             </div>
@@ -142,7 +136,7 @@ export default function HomeScreen({
         <div className="bg-gradient-to-r from-[#0B3D71] to-[#145B92] text-white px-5 py-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 font-black text-xl">
             <Bell className="w-5 h-5" />
-            <h2>{isHindi ? 'योजना व सब्सिडी अपडेट' : 'Scheme & Subsidy Updates'}</h2>
+            <h2>{tr('Scheme & Subsidy Updates', 'योजना व सब्सिडी अपडेट')}</h2>
           </div>
           <a
             href="https://www.pib.gov.in/AllRel.aspx?reg=3&lang=1"
@@ -150,7 +144,7 @@ export default function HomeScreen({
             rel="noreferrer"
             className="text-xs font-bold whitespace-nowrap hover:text-amber-200 transition-colors flex items-center gap-1"
           >
-            {isHindi ? 'सभी देखें' : 'View all'} <ArrowRight className="w-3.5 h-3.5" />
+            {tr('View all', 'सभी देखें')} <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
         <div className="divide-y divide-slate-200 px-5 flex-1">
@@ -162,16 +156,16 @@ export default function HomeScreen({
               rel="noreferrer"
               className="block py-4 first:pt-4 hover:bg-slate-50 -mx-2 px-2 transition-colors group"
             >
-              <div className="text-xs font-bold text-slate-500 mb-1.5">{notice.date}</div>
+              <div className="text-xs font-bold text-slate-500 mb-1.5">{trText(notice.date, 'hi')}</div>
               <div className="text-sm leading-snug font-semibold text-slate-700 group-hover:text-[#0B3D71] flex gap-1.5">
-                <span>{notice.title}</span>
+                <span>{trText(notice.title, 'hi')}</span>
                 <ExternalLink className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </a>
           ))}
         </div>
         <div className="border-t border-slate-200 px-5 py-2.5 text-[11px] text-slate-500 font-medium">
-          {isHindi ? 'स्रोत: प्रेस सूचना ब्यूरो (PIB)' : 'Source: Press Information Bureau (PIB)'}
+          {tr('Source: Press Information Bureau (PIB)', 'स्रोत: प्रेस सूचना ब्यूरो (PIB)')}
         </div>
       </aside>
         </div>
@@ -217,7 +211,7 @@ export default function HomeScreen({
               →
             </div>
             <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {isHindi ? "व्यवसाय योजनाएँ देखें" : "View Business Schemes"}
+              {tr('View Business Schemes', 'व्यवसाय योजनाएँ देखें')}
             </span>
           </button>
         </div>
@@ -245,7 +239,7 @@ export default function HomeScreen({
               →
             </div>
             <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {isHindi ? "छात्र योजनाएँ देखें" : "View Student Schemes"}
+              {tr('View Student Schemes', 'छात्र योजनाएँ देखें')}
             </span>
           </button>
         </div>
@@ -273,7 +267,7 @@ export default function HomeScreen({
               →
             </div>
             <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {isHindi ? "योजनाएँ देखें" : "View Skill Schemes"}
+              {tr('View Skill Schemes', 'योजनाएँ देखें')}
             </span>
           </button>
         </div>
@@ -289,10 +283,10 @@ export default function HomeScreen({
           </div>
           <div>
             <div className="text-sm font-extrabold text-[#0b2341]">
-              {isHindi ? "हजारों नागरिकों की सहायता" : "Assisted Thousands"}
+              {tr('Assisted Thousands of Citizens', 'हजारों नागरिकों की सहायता')}
             </div>
             <div className="text-xs text-slate-500 font-semibold">
-              {isHindi ? "हर दिन नई शुरुआत" : "Every day new start"}
+              {tr('A new start every day', 'हर दिन नई शुरुआत')}
             </div>
           </div>
         </div>
@@ -303,10 +297,10 @@ export default function HomeScreen({
           </div>
           <div>
             <div className="text-sm font-extrabold text-[#0b2341]">
-              {isHindi ? "केंद्रीय और राज्य सरकारी योजनाएँ" : "Central & State Schemes"}
+              {tr('Central & State Schemes', 'केंद्रीय और राज्य सरकारी योजनाएँ')}
             </div>
             <div className="text-xs text-slate-500 font-semibold">
-              {isHindi ? "एक ही स्थान पर" : "All in one place"}
+              {tr('All in one place', 'एक ही स्थान पर')}
             </div>
           </div>
         </div>
@@ -317,10 +311,10 @@ export default function HomeScreen({
           </div>
           <div>
             <div className="text-sm font-extrabold text-[#0b2341]">
-              {isHindi ? "विश्वसनीय जानकारी" : "Verified Official Info"}
+              {tr('Verified Official Info', 'विश्वसनीय जानकारी')}
             </div>
             <div className="text-xs text-slate-500 font-semibold">
-              {isHindi ? "सरकारी स्रोतों पर आधारित" : "From official sources"}
+              {tr('From official sources', 'सरकारी स्रोतों पर आधारित')}
             </div>
           </div>
         </div>
@@ -331,10 +325,10 @@ export default function HomeScreen({
           </div>
           <div>
             <div className="text-sm font-extrabold text-[#0b2341]">
-              {isHindi ? "सरल और बहुभाषी समर्थन" : "Multilingual Support"}
+              {tr('Simple & Multilingual Support', 'सरल और बहुभाषी समर्थन')}
             </div>
             <div className="text-xs text-slate-500 font-semibold">
-              {isHindi ? "आपकी भाषा में" : "In your language"}
+              {tr('In your language', 'आपकी भाषा में')}
             </div>
           </div>
         </div>
@@ -349,29 +343,29 @@ export default function HomeScreen({
             <div>
               <Users className="w-12 h-12 mb-4" />
               <p className="text-xl font-black leading-snug">
-                {isHindi ? 'जन-जन का विकास, सबका साथ' : 'Development for every citizen'}
+                {tr('Development for every citizen, together with all', 'जन-जन का विकास, सबका साथ')}
               </p>
             </div>
             <div className="border-t border-white/50 pt-4 text-sm font-bold leading-relaxed">
-              {isHindi ? 'भारत सरकार की पहल' : 'Government of India initiative'}
+              {tr('A Government of India initiative', 'भारत सरकार की पहल')}
             </div>
           </div>
 
           <div className="px-5 sm:px-7 py-7 lg:py-8 flex flex-col justify-between gap-5">
             <div>
               <h2 className="text-3xl sm:text-4xl font-black leading-tight text-[#075C3B]">
-                {isHindi ? '“सरकारी योजनाओं का लाभ उठाएँ, आत्मनिर्भर भारत में अपना योगदान दें।”' : '“Use government schemes and contribute to an Atmanirbhar Bharat.”'}
+                {tr('“Take advantage of government schemes and contribute to an Atmanirbhar Bharat.”', '“सरकारी योजनाओं का लाभ उठाएँ, आत्मनिर्भर भारत में अपना योगदान दें।”')}
               </h2>
               <p className="mt-3 text-lg text-slate-600 font-medium">
-                {isHindi ? 'सरकार की योजनाएँ आपके विकास के लिए हैं। सही जानकारी पाएं, सही अवसर चुनें।' : 'Government schemes are for your progress. Find the right information and choose the right opportunity.'}
+                {tr('Government schemes are for your progress. Find the right information and choose the right opportunity.', 'सरकार की योजनाएँ आपके विकास के लिए हैं। सही जानकारी पाएं, सही अवसर चुनें।')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-sm text-slate-700">
-              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><FileText className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{isHindi ? 'एक ही स्थान पर योजना जानकारी' : 'All schemes in one place'}</span></div>
-              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><ShieldCheck className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{isHindi ? 'विश्वसनीय सरकारी स्रोत' : 'Verified government sources'}</span></div>
-              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><Users className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{isHindi ? 'हर वर्ग के लिए उपयोगी योजनाएँ' : 'Useful schemes for every group'}</span></div>
-              <div className="flex items-center gap-2.5"><Headphones className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{isHindi ? 'सरल भाषा में मार्गदर्शन' : 'Guidance in simple language'}</span></div>
+              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><FileText className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{tr('Scheme information in one place', 'एक ही स्थान पर योजना जानकारी')}</span></div>
+              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><ShieldCheck className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{tr('Verified government sources', 'विश्वसनीय सरकारी स्रोत')}</span></div>
+              <div className="flex items-center gap-2.5 xl:border-r xl:border-slate-200 xl:pr-3"><Users className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{tr('Useful schemes for every group', 'हर वर्ग के लिए उपयोगी योजनाएँ')}</span></div>
+              <div className="flex items-center gap-2.5"><Headphones className="w-8 h-8 text-[#086344] shrink-0" /><span className="font-bold">{tr('Guidance in simple language', 'सरल भाषा में मार्गदर्शन')}</span></div>
             </div>
           </div>
 
@@ -379,13 +373,13 @@ export default function HomeScreen({
             <img src="/rural_farmer_couple.png" alt="Government scheme beneficiaries" className="absolute inset-0 h-full w-full object-cover object-center" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#FBFCF7] via-transparent to-transparent"></div>
             <div className="absolute top-5 right-5 text-right text-[#0B3D71] font-black italic text-lg leading-tight">
-              {isHindi ? <>विकसित भारत<br />सशक्त नागरिक</> : <>Viksit Bharat<br />Empowered Citizens</>}
+              {tr('Viksit Bharat', 'विकसित भारत')}<br />{tr('Empowered Citizens', 'सशक्त नागरिक')}
             </div>
             <button
               onClick={() => onSelectFlow('business')}
               className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 bg-[#086344] hover:bg-[#064A33] text-white font-extrabold py-3 sm:py-4 px-4 sm:px-6 text-base sm:text-lg flex items-center gap-2 shadow-lg transition-colors"
             >
-              <span>{isHindi ? 'अभी खोज शुरू करें' : 'Start Searching Now'}</span>
+              <span>{tr('Start Searching Now', 'अभी खोज शुरू करें')}</span>
               <ArrowRight className="w-6 h-6" />
             </button>
           </div>
@@ -401,12 +395,10 @@ export default function HomeScreen({
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="text-3xl font-black text-[#0B3D71] tracking-tight">
-                  {isHindi ? "EMI कैलकुलेटर" : "EMI Calculator"}
+                  {tr('EMI Calculator', 'EMI कैलकुलेटर')}
                 </h3>
                 <p className="text-sm text-slate-600 font-semibold">
-                  {isHindi 
-                    ? "सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं"
-                    : "Estimate your monthly EMI for government loans"}
+                  {tr('Estimate your monthly EMI for government loans', 'सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं')}
                 </p>
               </div>
 
@@ -414,10 +406,10 @@ export default function HomeScreen({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {isHindi ? "लोन राशि (₹)" : "Loan Amount (₹)"}
+                    {tr('Loan Amount (₹)', 'लोन राशि (₹)')}
                   </label>
                   <span className="text-xl font-black text-[#0B75C9]">
-                    ₹ {loanAmount ? parseInt(loanAmount).toLocaleString(isHindi ? 'en-IN' : 'en-US') : '0'}
+                    ₹ {loanAmount ? parseInt(loanAmount).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN') : '0'}
                   </span>
                 </div>
                 <input
@@ -442,10 +434,10 @@ export default function HomeScreen({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {isHindi ? "ऋण अवधि (वर्ष)" : "Loan Tenure (Years)"}
+                    {tr('Loan Tenure (Years)', 'ऋण अवधि (वर्ष)')}
                   </label>
                   <span className="text-xl font-black text-[#0B75C9]">
-                    {loanTenure || '1'} {isHindi ? 'वर्ष' : 'yrs'}
+                    {loanTenure || '1'} {tr('yrs', 'वर्ष')}
                   </span>
                 </div>
                 <input
@@ -461,12 +453,12 @@ export default function HomeScreen({
                   }}
                 />
                 <div className="flex justify-between text-xs font-semibold text-slate-500">
-                  <span>1 {isHindi ? 'वर्ष' : 'year'}</span>
-                  <span>30 {isHindi ? 'वर्ष' : 'years'}</span>
+                  <span>1 {tr('year', 'वर्ष')}</span>
+                  <span>30 {tr('years', 'वर्ष')}</span>
                 </div>
                 {loanTenure && (
                   <p className="text-xs text-[#0B75C9] font-bold bg-blue-50 p-2 rounded">
-                    = {parseInt(loanTenure) * 12} {isHindi ? 'महीने' : 'months'}
+                    = {parseInt(loanTenure) * 12} {tr('months', 'महीने')}
                   </p>
                 )}
               </div>
@@ -475,7 +467,7 @@ export default function HomeScreen({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {isHindi ? "ब्याज दर (% वार्षिक)" : "Interest Rate (% p.a.)"}
+                    {tr('Interest Rate (% p.a.)', 'ब्याज दर (% वार्षिक)')}
                   </label>
                   <span className="text-xl font-black text-[#D97706]">
                     {interestRate}%
@@ -498,13 +490,13 @@ export default function HomeScreen({
                   <span>12%</span>
                 </div>
                 <div className="bg-[#FEF3C7] border border-[#FDE68A] p-2 rounded text-xs font-bold text-[#92400E]">
-                  {interestRate === '5.5' && (isHindi ? 'PM मुद्रा - सबसे कम' : 'PM Mudra - Lowest')}
-                  {interestRate === '6.5' && (isHindi ? 'PM स्टैंड-अप इंडिया' : 'PM Stand-up India')}
+                  {interestRate === '5.5' && tr('PM Mudra - Lowest', 'PM मुद्रा - सबसे कम')}
+                  {interestRate === '6.5' && tr('PM Stand-up India', 'PM स्टैंड-अप इंडिया')}
                   {interestRate === '7' && 'PMEGP'}
-                  {interestRate === '7.5' && (isHindi ? 'PM KUSUM' : 'PM KUSUM')}
-                  {interestRate === '8' && (isHindi ? 'सामान्य दर' : 'Standard Rate')}
-                  {interestRate === '8.5' && (isHindi ? 'सामान्य + दर' : 'Standard+ Rate')}
-                  {!['5.5', '6.5', '7', '7.5', '8', '8.5'].includes(interestRate) && (isHindi ? 'कस्टम दर' : 'Custom Rate')}
+                  {interestRate === '7.5' && 'PM KUSUM'}
+                  {interestRate === '8' && tr('Standard Rate', 'सामान्य दर')}
+                  {interestRate === '8.5' && tr('Standard+ Rate', 'सामान्य + दर')}
+                  {!['5.5', '6.5', '7', '7.5', '8', '8.5'].includes(interestRate) && tr('Custom Rate', 'कस्टम दर')}
                 </div>
               </div>
             </div>
@@ -517,41 +509,39 @@ export default function HomeScreen({
                   <>
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        {isHindi ? "मासिक किस्त" : "Monthly EMI"}
+                        {tr('Monthly EMI', 'मासिक किस्त')}
                       </p>
                       <p className="text-4xl font-black text-[#0B75C9]">
-                        ₹ {parseInt(emiResult.emi).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                        ₹ {parseInt(emiResult.emi).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
                       </p>
                     </div>
 
                     <div className="border-t-2 border-slate-200 pt-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-slate-600">
-                          {isHindi ? "कुल राशि" : "Total Amount"}
+                          {tr('Total Amount', 'कुल राशि')}
                         </span>
                         <span className="text-lg font-black text-[#0B3D71]">
-                          ₹ {parseInt(emiResult.totalAmount).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                          ₹ {parseInt(emiResult.totalAmount).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
                         </span>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-slate-600">
-                          {isHindi ? "कुल ब्याज" : "Total Interest"}
+                          {tr('Total Interest', 'कुल ब्याज')}
                         </span>
                         <span className="text-lg font-black text-[#D97706]">
-                          ₹ {parseInt(emiResult.totalInterest).toLocaleString(isHindi ? 'en-IN' : 'en-US')}
+                          ₹ {parseInt(emiResult.totalInterest).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
                         </span>
                       </div>
                     </div>
 
                     <div className="bg-[#E8F5E9] border-l-4 border-[#15803D] p-4 rounded-lg">
                       <p className="text-xs font-bold text-[#065F46] uppercase tracking-widest mb-1">
-                        {isHindi ? "सूचना" : "Note"}
+                        {tr('Note', 'सूचना')}
                       </p>
                       <p className="text-sm text-[#15803D] font-semibold leading-relaxed">
-                        {isHindi 
-                          ? "यह एक अनुमानित गणना है। वास्तविक EMI बैंक के नियमों के अनुसार भिन्न हो सकता है। सटीक जानकारी के लिए बैंक से संपर्क करें।"
-                          : "This is an estimate. Actual EMI may vary as per bank policies. Contact your bank for exact details."}
+                        {tr('This is an estimate. Actual EMI may vary as per bank policies. Contact your bank for exact details.', 'यह एक अनुमानित गणना है। वास्तविक EMI बैंक के नियमों के अनुसार भिन्न हो सकता है। सटीक जानकारी के लिए बैंक से संपर्क करें।')}
                       </p>
                     </div>
                   </>
@@ -561,9 +551,7 @@ export default function HomeScreen({
                       📊
                     </div>
                     <p className="text-center text-slate-600 font-semibold">
-                      {isHindi 
-                        ? "लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें"
-                        : "Enter loan amount, tenure and rate to see your EMI"}
+                      {tr('Enter loan amount, tenure and rate to see your EMI', 'लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें')}
                     </p>
                   </div>
                 )}
@@ -572,12 +560,12 @@ export default function HomeScreen({
               {/* Info Box */}
               <div className="bg-[#FEF3C7] border-2 border-[#FDE68A] rounded-lg p-4 space-y-2">
                 <p className="text-xs font-extrabold text-[#78350F] uppercase tracking-widest">
-                  {isHindi ? "मुख्य योजनाएँ" : "Popular Schemes"}
+                  {tr('Popular Schemes', 'मुख्य योजनाएँ')}
                 </p>
                 <ul className="text-sm text-[#92400E] font-semibold space-y-1.5">
-                  <li>• PM मुद्रा: ₹50,000 - ₹10 लाख</li>
-                  <li>• PMEGP: ₹25 - ₹100 लाख</li>
-                  <li>• PM किसान: कृषि ऋण सहायता</li>
+                  <li>• {tr('PM Mudra: ₹50,000 - ₹10 Lakh', 'PM मुद्रा: ₹50,000 - ₹10 लाख')}</li>
+                  <li>• {tr('PMEGP: ₹25 - ₹100 Lakh', 'PMEGP: ₹25 - ₹100 लाख')}</li>
+                  <li>• {tr('PM Kisan: Agriculture loan support', 'PM किसान: कृषि ऋण सहायता')}</li>
                 </ul>
               </div>
             </div>

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Languages, Check, ChevronDown, Accessibility } from 'lucide-react';
-import { LANGUAGES, getTranslation } from '../data/translations';
+import { LANGUAGES } from '../data/translations';
+import { useI18n } from '../i18n';
 
-export default function Header({ currentLang, onLanguageChange, onGoHome, onOpenDirectory }) {
+export default function Header({ onGoHome, onOpenDirectory }) {
+  const { lang: currentLang, setLang, t, tr } = useI18n();
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [fontSize, setFontSize] = useState('normal'); // normal | large | xlarge
 
-  const t = (key) => getTranslation(currentLang, key);
   const activeLangObj = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
-  const isHindi = currentLang === 'hi';
 
   const handleSelectLang = (code) => {
-    onLanguageChange(code);
+    setLang(code);
     setIsLangModalOpen(false);
   };
 
@@ -41,12 +41,12 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
             {/* Accessibility and language controls */}
             <div className="flex items-center gap-3 text-xs font-semibold text-gov-navy">
               <button className="hidden xl:block hover:text-gov-saffron transition-colors">
-                {isHindi ? 'मुख्य सामग्री पर जाएं' : 'Skip to main content'}
+                {tr('Skip to main content', 'मुख्य सामग्री पर जाएं')}
               </button>
               <span className="hidden xl:inline text-slate-400">|</span>
               <button className="hover:text-gov-saffron transition-colors flex items-center gap-1">
                 <Accessibility className="w-3 h-3" />
-                <span>{isHindi ? "स्क्रीन रीडर के लिए" : "Screen Reader Access"}</span>
+                <span>{tr('Screen Reader Access', 'स्क्रीन रीडर के लिए')}</span>
               </button>
               <span className="text-slate-400">|</span>
               <div className="flex items-center gap-1 font-mono font-bold">
@@ -90,7 +90,7 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
                 <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Setu</span>
               </h1>
               <p className="mt-1 text-[9px] sm:text-sm font-bold text-slate-600 whitespace-nowrap">
-                {isHindi ? "सरकारी योजनाओं से सशक्त भविष्य" : "Empowering Future with Government Schemes"}
+                {tr('Empowering Future with Government Schemes', 'सरकारी योजनाओं से सशक्त भविष्य')}
               </p>
             </div>
           </button>
@@ -98,19 +98,19 @@ export default function Header({ currentLang, onLanguageChange, onGoHome, onOpen
           {/* Navigation Links (Desktop) */}
           <nav className="hidden md:flex items-center gap-6 font-bold text-sm text-slate-800">
             <button onClick={onGoHome} className="text-gov-navy hover:text-gov-saffron transition-colors border-b-2 border-gov-navy py-1">
-              {isHindi ? "होम" : "Home"}
+              {tr('Home', 'होम')}
             </button>
             <button onClick={onOpenDirectory} className="hover:text-gov-saffron transition-colors py-1">
-              {isHindi ? "योजनाओं की सूची" : "Schemes Directory"}
+              {tr('Schemes Directory', 'योजनाओं की सूची')}
             </button>
             <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {isHindi ? "सहायता केंद्र" : "Help Center"}
+              {tr('Help Center', 'सहायता केंद्र')}
             </button>
             <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {isHindi ? "महत्वपूर्ण लिंक" : "Important Links"}
+              {tr('Important Links', 'महत्वपूर्ण लिंक')}
             </button>
             <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {isHindi ? "हमसे संपर्क करें" : "Contact Us"}
+              {tr('Contact Us', 'हमसे संपर्क करें')}
             </button>
           </nav>
 

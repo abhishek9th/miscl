@@ -1,18 +1,16 @@
 import React from 'react';
 import { RotateCcw, Edit3, ArrowRight, AlertTriangle } from 'lucide-react';
 import { SCHEMES } from '../data/schemes';
-import { getTranslation } from '../data/translations';
+import { useI18n } from '../i18n';
 
-export default function NoSchemesScreen({ 
-  lastReason, 
-  userCriteria, 
-  onEditInfo, 
-  onRestart, 
-  onSelectScheme,
-  currentLang
+export default function NoSchemesScreen({
+  lastReason,
+  userCriteria,
+  onEditInfo,
+  onRestart,
+  onSelectScheme
 }) {
-  const t = (key) => getTranslation(currentLang, key);
-  const isHindi = currentLang !== 'en';
+  const { t, tr, trText } = useI18n();
   const closestMatches = SCHEMES.slice(0, 2);
 
   return (
@@ -40,7 +38,7 @@ export default function NoSchemesScreen({
               <span>{t('last_filter_reason')}</span>
             </div>
             <p className="text-base text-red-950 font-bold pl-7">
-              {lastReason}
+              {trText(lastReason, 'hi')}
             </p>
           </div>
         )}
@@ -76,12 +74,12 @@ export default function NoSchemesScreen({
             {closestMatches.map((scheme) => (
               <div key={scheme.id} className="gov-card p-4 space-y-2 border-slate-300">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-lg font-bold text-gov-navy">{isHindi ? scheme.name_hi : scheme.name}</h4>
+                  <h4 className="text-lg font-bold text-gov-navy">{tr(scheme.name, scheme.name_hi || scheme.name)}</h4>
                   <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-0.5 rounded border border-slate-300 shrink-0">
-                    {isHindi ? 'निकटतम विकल्प' : 'Closest Match'}
+                    {tr('Closest Match', 'निकटतम विकल्प')}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 line-clamp-2">{scheme.description_hi}</p>
+                <p className="text-xs text-slate-600 line-clamp-2">{trText(scheme.description_hi, 'hi')}</p>
                 <button
                   onClick={() => onSelectScheme(scheme)}
                   className="text-sm font-bold text-gov-navy hover:underline flex items-center gap-1 mt-1"

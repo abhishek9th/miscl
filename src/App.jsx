@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import Header from './components/Header';
 import LocationModal from './components/LocationModal';
 import HomeScreen from './components/HomeScreen';
@@ -12,31 +11,45 @@ import SchemeDetailScreen from './components/SchemeDetailScreen';
 import OfficialSchemesDirectory from './components/OfficialSchemesDirectory';
 import { filterBusinessSchemes, filterSkillSchemes, filterStudentSchemes } from './services/filterService';
 import { SCHEMES } from './data/schemes';
-import { getTranslation } from './data/translations';
+import { useI18n } from './i18n';
+
+function readSavedState() {
+  try {
+    const s = localStorage.getItem('schemesetu_state');
+    return s || 'Uttar Pradesh';
+  } catch {
+    return 'Uttar Pradesh';
+  }
+}
 
 export default function App() {
+  const { tr, isHindi, setLang } = useI18n();
+
   // App Navigation State
   const [currentScreen, setCurrentScreen] = useState('home'); // home | business_flow | student_flow | results | detail | no_schemes
-  const [currentLang, setCurrentLang] = useState('hi');
-  const [showLocationModal, setShowLocationModal] = useState(false);
-  const [userLocation, setUserLocation] = useState({ state: 'Uttar Pradesh' });
+  // Per user request: prompt for location on every load until a state is chosen this session.
+  const [showLocationModal, setShowLocationModal] = useState(true);
+  const [userLocation, setUserLocation] = useState({ state: readSavedState() });
 
   // User Selection Context
-  const [userState, setUserState] = useState('Uttar Pradesh');
+  const [userState, setUserState] = useState(readSavedState());
   const [userCriteria, setUserCriteria] = useState({});
   const [matchingSchemes, setMatchingSchemes] = useState([]);
   const [selectedScheme, setSelectedScheme] = useState(null);
   const [noSchemesReason, setNoSchemesReason] = useState(null);
 
-  const t = (key) => getTranslation(currentLang, key);
-  const isHindi = currentLang === 'hi';
-
   // Location Modal Handlers
   const handleLocationGranted = (locData) => {
     setUserState(locData.state);
     setUserLocation(locData);
+    try {
+      localStorage.setItem('schemesetu_state', locData.state);
+    } catch {
+      /* ignore */
+    }
+    // Auto-select the language for the detected/selected state.
     if (locData.suggestedLang) {
-      setCurrentLang(locData.suggestedLang);
+      setLang(locData.suggestedLang);
     }
     setShowLocationModal(false);
   };
@@ -147,8 +160,6 @@ export default function App() {
     <div className="min-h-screen bg-white text-slate-900 flex flex-col font-hindi relative">
       {/* Header Bar */}
       <Header
-        currentLang={currentLang}
-        onLanguageChange={(newLang) => setCurrentLang(newLang)}
         onGoHome={handleRestart}
         onOpenDirectory={handleBrowseAllSchemes}
       />
@@ -157,7 +168,6 @@ export default function App() {
       <main className="official-portal flex-1 pb-12">
         {currentScreen === 'home' && (
           <HomeScreen
-            currentLang={currentLang}
             userState={userState}
             onSelectFlow={handleSelectFlow}
             onBrowseAllSchemes={handleBrowseAllSchemes}
@@ -171,7 +181,6 @@ export default function App() {
             onComplete={handleFlowComplete}
             onNoSchemesFound={handleNoSchemesFound}
             onBackToHome={() => setCurrentScreen('home')}
-            currentLang={currentLang}
           />
         )}
 
@@ -181,7 +190,6 @@ export default function App() {
             onComplete={handleFlowComplete}
             onNoSchemesFound={handleNoSchemesFound}
             onBackToHome={() => setCurrentScreen('home')}
-            currentLang={currentLang}
           />
         )}
 
@@ -191,7 +199,6 @@ export default function App() {
             userCriteria={userCriteria}
             onSelectScheme={handleSelectScheme}
             onRestart={handleRestart}
-            currentLang={currentLang}
           />
         )}
 
@@ -201,12 +208,11 @@ export default function App() {
             userCriteria={userCriteria}
             userLocation={userLocation}
             onBack={() => setCurrentScreen('results')}
-            currentLang={currentLang}
           />
         )}
 
         {currentScreen === 'directory' && (
-          <OfficialSchemesDirectory currentLang={currentLang} onBack={handleRestart} />
+          <OfficialSchemesDirectory onBack={handleRestart} />
         )}
 
         {currentScreen === 'no_schemes' && (
@@ -216,79 +222,70 @@ export default function App() {
             onEditInfo={handleEditInfo}
             onRestart={handleRestart}
             onSelectScheme={handleSelectScheme}
-            currentLang={currentLang}
           />
         )}
       </main>
 
       {/* Persistent help control */}
-      <ChatBot 
-        currentLang={currentLang} 
-        onVoiceProfileReady={handleVoiceProfileReady}
-      />
+      <ChatBot onVoiceProfileReady={handleVoiceProfileReady} />
 
       {/* Location Permission Modal */}
       {showLocationModal && (
         <LocationModal
-          currentLang={currentLang}
           onLocationGranted={handleLocationGranted}
           onLocationDenied={handleLocationDenied}
         />
       )}
 
-      {/* COMPREHENSIVE OFFICIAL GOVERNMENT FOOTER (Matching Screenshot) */}
+      {/* COMPREHENSIVE OFFICIAL GOVERNMENT FOOTER */}
       <footer className="bg-[#0b2341] text-slate-300 border-t-4 border-gov-saffron no-print">
-        
+
         {/* Top Footer Section */}
         <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-          
+
           {/* Column 1: Ministry & Emblem */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🏛️</span>
               <div>
                 <div className="text-sm font-extrabold text-white">
-                  {isHindi ? "भारत सरकार" : "Government of India"}
+                  {tr('Government of India', 'भारत सरकार')}
                 </div>
                 <div className="text-xs text-slate-300 font-medium">
-                  {isHindi ? "सामाजिक न्याय और अधिकारिता मंत्रालय" : "Ministry of Social Justice & Empowerment"}
+                  {tr('Ministry of Social Justice & Empowerment', 'सामाजिक न्याय और अधिकारिता मंत्रालय')}
                 </div>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-medium">
-              {isHindi 
-                ? "सभी के लिए न्याय, सबके लिए अवसर। भारत सरकार का सुगम योजना मंच।" 
-                : "Justice for all, opportunities for everyone. Accessible scheme discovery portal."}
+              {tr('Justice for all, opportunities for everyone. Accessible scheme discovery portal.', 'सभी के लिए न्याय, सबके लिए अवसर। भारत सरकार का सुगम योजना मंच।')}
             </p>
           </div>
 
           {/* Column 2: Important Links */}
           <div className="space-y-2">
             <h4 className="text-sm font-extrabold text-white uppercase tracking-wider border-l-3 border-gov-saffron pl-2">
-              {isHindi ? "महत्वपूर्ण लिंक" : "Important Links"}
+              {tr('Important Links', 'महत्वपूर्ण लिंक')}
             </h4>
             <ul className="space-y-1.5 text-xs font-semibold text-slate-400">
-              <li><button onClick={handleBrowseAllSchemes} className="hover:text-white transition-colors">{isHindi ? "योजनाओं की सूची" : "Schemes Directory"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "आधिकारिक पोर्टल" : "Official Portals"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "अक्सर पूछे जाने वाले प्रश्न" : "Frequently Asked Questions"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "सहायता केंद्र" : "Helpdesk"}</button></li>
+              <li><button onClick={handleBrowseAllSchemes} className="hover:text-white transition-colors">{tr('Schemes Directory', 'योजनाओं की सूची')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Official Portals', 'आधिकारिक पोर्टल')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Frequently Asked Questions', 'अक्सर पूछे जाने वाले प्रश्न')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Helpdesk', 'सहायता केंद्र')}</button></li>
             </ul>
           </div>
 
           {/* Column 3: Policies */}
           <div className="space-y-2">
             <h4 className="text-sm font-extrabold text-white uppercase tracking-wider border-l-3 border-gov-saffron pl-2">
-              {isHindi ? "नीतियां" : "Policies"}
+              {tr('Policies', 'नीतियां')}
             </h4>
             <ul className="space-y-1.5 text-xs font-semibold text-slate-400">
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "गोपनीयता नीति" : "Privacy Policy"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "उपयोग की शर्तें" : "Terms of Use"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "अस्वीकरण" : "Disclaimer"}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{isHindi ? "साइट मैप" : "Sitemap"}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Privacy Policy', 'गोपनीयता नीति')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Terms of Use', 'उपयोग की शर्तें')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Disclaimer', 'अस्वीकरण')}</button></li>
+              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Sitemap', 'साइट मैप')}</button></li>
             </ul>
           </div>
-
-
 
         </div>
 
@@ -296,14 +293,14 @@ export default function App() {
         <div className="bg-[#071629] py-3 px-4 text-[11px] text-slate-400 border-t border-slate-800">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
             <div>
-              © 2024 SchemeSetu India. {isHindi ? "भारत सरकार. सभी अधिकार सुरक्षित।" : "Government of India. All rights reserved."}
+              © 2024 SchemeSetu India. {tr('Government of India. All rights reserved.', 'भारत सरकार. सभी अधिकार सुरक्षित।')}
             </div>
             <div className="flex items-center gap-3 font-semibold">
-              <button onClick={handleRestart} className="hover:text-white">{isHindi ? "सुलभता" : "Accessibility"}</button>
+              <button onClick={handleRestart} className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>
               <span>|</span>
-              <button onClick={handleRestart} className="hover:text-white">{isHindi ? "प्रतिक्रिया दें" : "Feedback"}</button>
+              <button onClick={handleRestart} className="hover:text-white">{tr('Feedback', 'प्रतिक्रिया दें')}</button>
               <span>|</span>
-              <span>{isHindi ? "અંતિમ અપડેટ: ઓગસ્ટ 2024" : "Last Updated: August 2024"}</span>
+              <span>{tr('Last Updated: August 2024', 'अंतिम अपडेट: अगस्त 2024')}</span>
             </div>
           </div>
         </div>
