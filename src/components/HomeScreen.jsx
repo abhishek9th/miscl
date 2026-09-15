@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users } from 'lucide-react';
+import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users, Banknote, BarChart3, Info, Star, ChevronRight, ChevronsRight, Sprout, Landmark, Briefcase } from 'lucide-react';
 import { useI18n } from '../i18n';
+import EligibilityDashboard from './EligibilityDashboard';
 
 const GOVERNMENT_NOTICES = [
   {
@@ -28,13 +29,18 @@ const GOVERNMENT_NOTICES = [
 export default function HomeScreen({
   userState,
   onSelectFlow,
-  onBrowseAllSchemes
+  onBrowseAllSchemes,
+  session,
+  onOpenScheme,
+  onOpenProfile,
+  onOpenEligibility,
 }) {
   const { t, tr, trText, lang } = useI18n();
 
-  // EMI Calculator State
-  const [loanAmount, setLoanAmount] = useState('');
-  const [loanTenure, setLoanTenure] = useState('');
+  // EMI Calculator State — pre-filled with sensible defaults so an estimate
+  // shows immediately, matching common government-loan calculators.
+  const [loanAmount, setLoanAmount] = useState('1000000');
+  const [loanTenure, setLoanTenure] = useState('5');
   const [interestRate, setInterestRate] = useState('8.5');
 
   // Calculate EMI
@@ -69,7 +75,7 @@ export default function HomeScreen({
 
   return (
     <div className="w-full font-sans space-y-6">
-      
+
       {/* HERO & LATEST GOVERNMENT NOTICES */}
       <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 pt-2 sm:pt-3">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(320px,1.1fr)] gap-3 items-stretch">
@@ -97,16 +103,6 @@ export default function HomeScreen({
               <p className="text-base sm:text-lg text-slate-700 font-medium leading-relaxed">
                 {tr('Information on government schemes for business, education, skills and employment is now in your hands — simple, fast, and in your language.', 'व्यवसाय, शिक्षा, कौशल और रोजगार से जुड़ी सरकारी योजनाओं की जानकारी अब आपके हाथों में – सरल, तेज और आपकी भाषा में।')}
               </p>
-            </div>
-
-            {/* Saffron/Yellow Callout Box */}
-            <div className="bg-[#FEF3C7]/95 backdrop-blur-sm border-2 border-[#FDE68A] rounded-2xl p-4 flex items-center gap-3 shadow-md">
-              <div className="w-10 h-10 rounded-xl bg-[#D97706] text-white flex items-center justify-center text-xl shrink-0 shadow-sm">
-                👥
-              </div>
-              <div className="text-sm font-extrabold text-[#78350F] leading-snug">
-                {tr('Specially for Scheduled Castes, marginalized communities, and all eligible citizens', 'विशेष रूप से अनुसूचित जाति, वंचित वर्गों और सभी पात्र नागरिकों के लिए')}
-              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -175,7 +171,7 @@ export default function HomeScreen({
       <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-6 space-y-8">
 
       {/* MAIN SECTION HEADING */}
-      <div className="text-left space-y-1.5 pt-2">
+      <div className="text-center space-y-1.5 pt-2">
         <h2 className="text-2xl sm:text-3xl font-black text-[#0b2341] font-sans tracking-tight">
           {t('home_heading')}
         </h2>
@@ -184,94 +180,48 @@ export default function HomeScreen({
         </p>
       </div>
 
-      {/* 3 SERVICE CARDS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* 3 SERVICE CARDS — restyled to match the "Easy steps" reference look:
+          white centered cards, green icon/title accents, dotted corner motif,
+          soft blurred circle accent, and chevron connectors between cards. */}
+      {/* support-cards-section opts back into rounded cards — see the matching
+          override in index.css next to the site-wide square-edge reset. */}
+      <div className="support-cards-section relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-emerald-50/60 py-10 px-4 sm:px-8">
 
-        {/* Unified service cards */}
-        <div className="bg-[#F5FAFF] border-2 border-[#BFDBFE] p-6 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md hover:border-[#60A5FA] transition-all">
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-full bg-[#0B75C9] text-white flex items-center justify-center shadow-md">
-              <Store className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-[#0B3D71]">
-                {t('card_business_title')}
-              </h3>
-              <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                {t('card_business_desc')}
-              </p>
-            </div>
-          </div>
+        {/* Decorative dot grid, top-left */}
+        <div
+          className="hidden sm:block absolute top-6 left-6 w-32 h-24 opacity-40 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #34d399 1.5px, transparent 1.5px)',
+            backgroundSize: '14px 14px',
+          }}
+        />
+        {/* Decorative soft blurred circle, bottom-right */}
+        <div className="hidden sm:block absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-emerald-200/40 blur-2xl pointer-events-none" />
 
-          <button
-            onClick={() => onSelectFlow('business')}
-            className="flex items-center gap-3 text-left group focus:outline-none pt-2"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#0B75C9] text-white flex items-center justify-center text-lg font-bold shadow group-hover:scale-110 transition-transform">
-              →
-            </div>
-            <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {tr('View Business Schemes', 'व्यवसाय योजनाएँ देखें')}
-            </span>
-          </button>
+        <div className="relative grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-6 md:gap-3 items-center max-w-5xl mx-auto">
+          {[
+            { Icon: Store, titleEn: 'Business Support', titleHi: 'व्यवसाय सहायता', flow: 'business', descKey: 'card_business_desc' },
+            { Icon: GraduationCap, titleEn: 'Student Support', titleHi: 'छात्र सहायता', flow: 'student', descKey: 'card_student_desc' },
+            { Icon: Settings, titleEn: 'Skills & Employment', titleHi: 'कौशल और रोजगार', flow: 'skills', descKey: 'card_skills_desc' },
+          ].flatMap(({ Icon, titleEn, titleHi, flow, descKey }, i, arr) => {
+            const card = (
+              <button
+                key={flow}
+                onClick={() => onSelectFlow(flow)}
+                className="w-full bg-white shadow-md hover:shadow-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-2.5"
+              >
+                <Icon className="w-10 h-10 text-emerald-600" strokeWidth={1.75} />
+                <h3 className="text-lg font-black text-emerald-600">{tr(titleEn, titleHi)}</h3>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">{t(descKey)}</p>
+              </button>
+            );
+            // Insert a chevron connector between cards (desktop only).
+            if (i < arr.length - 1) {
+              return [card, <ChevronsRight key={`arrow-${flow}`} className="hidden md:block w-7 h-7 text-slate-300 mx-auto" />];
+            }
+            return [card];
+          })}
         </div>
-
-        <div className="bg-[#F5FAFF] border-2 border-[#BFDBFE] p-6 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md hover:border-[#60A5FA] transition-all">
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-full bg-[#0B75C9] text-white flex items-center justify-center shadow-md">
-              <GraduationCap className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-[#0B3D71]">
-                {t('card_student_title')}
-              </h3>
-              <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                {t('card_student_desc')}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => onSelectFlow('student')}
-            className="flex items-center gap-3 text-left group focus:outline-none pt-2"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#0B75C9] text-white flex items-center justify-center text-lg font-bold shadow group-hover:scale-110 transition-transform">
-              →
-            </div>
-            <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {tr('View Student Schemes', 'छात्र योजनाएँ देखें')}
-            </span>
-          </button>
-        </div>
-
-        <div className="bg-[#F5FAFF] border-2 border-[#BFDBFE] p-6 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md hover:border-[#60A5FA] transition-all">
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-full bg-[#0B75C9] text-white flex items-center justify-center shadow-md">
-              <Settings className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-[#0B3D71]">
-                {t('card_skills_title')}
-              </h3>
-              <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                {t('card_skills_desc')}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => onSelectFlow('skills')}
-            className="flex items-center gap-3 text-left group focus:outline-none pt-2"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#0B75C9] text-white flex items-center justify-center text-lg font-bold shadow group-hover:scale-110 transition-transform">
-              →
-            </div>
-            <span className="text-lg font-black text-[#0B3D71] group-hover:text-[#0B75C9] transition-colors">
-              {tr('View Skill Schemes', 'योजनाएँ देखें')}
-            </span>
-          </button>
-        </div>
-
       </div>
 
       {/* 4-COLUMN TRUST INDICATORS BAR */}
@@ -335,6 +285,15 @@ export default function HomeScreen({
 
       </div>
 
+      {/* PROACTIVE ELIGIBILITY — compact summary; "See more" opens the full
+          claimable list on its own page. Placed here (below the hero) rather
+          than at the very top. */}
+      {session && onOpenScheme && (
+        <div className="-mx-3 sm:-mx-4">
+          <EligibilityDashboard variant="summary" onSeeMore={onOpenEligibility} onOpenProfile={onOpenProfile} />
+        </div>
+      )}
+
       {/* PUBLIC-SERVICE CAMPAIGN BANNER */}
       <section className="relative overflow-hidden border-2 border-[#8FB9A6] bg-[#FBFCF7] shadow-sm">
         <div className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-[#F97316] from-0% from-[#F97316] via-[#F97316] via-[38%] to-[#15803D] to-[38%]"></div>
@@ -387,189 +346,155 @@ export default function HomeScreen({
       </section>
 
       {/* EMI CALCULATOR SECTION */}
-      <section className="bg-gradient-to-br from-[#F5FAFF] to-[#E8F1FF] border-2 border-[#60A5FA] rounded-2xl p-6 sm:p-8 shadow-lg">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* Left Side: Calculator Form */}
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-3xl font-black text-[#0B3D71] tracking-tight">
-                  {tr('EMI Calculator', 'EMI कैलकुलेटर')}
-                </h3>
-                <p className="text-sm text-slate-600 font-semibold">
-                  {tr('Estimate your monthly EMI for government loans', 'सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं')}
-                </p>
-              </div>
+      {/* emi-card-section opts this section back into rounded cards — see the
+          matching override in index.css next to the site-wide square-edge reset. */}
+      <section className="emi-card-section grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-              {/* Loan Amount Slider */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {tr('Loan Amount (₹)', 'लोन राशि (₹)')}
-                  </label>
-                  <span className="text-xl font-black text-[#0B75C9]">
-                    ₹ {loanAmount ? parseInt(loanAmount).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN') : '0'}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="10000"
-                  max="5000000"
-                  step="10000"
-                  value={loanAmount || '100000'}
-                  onChange={(e) => setLoanAmount(e.target.value)}
-                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #0B75C9 0%, #0B75C9 ${((loanAmount || 100000) - 10000) / (5000000 - 10000) * 100}%, #BFDBFE ${((loanAmount || 100000) - 10000) / (5000000 - 10000) * 100}%, #BFDBFE 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-xs font-semibold text-slate-500">
-                  <span>₹10,000</span>
-                  <span>₹50,00,000</span>
-                </div>
-              </div>
-
-              {/* Loan Tenure Slider */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {tr('Loan Tenure (Years)', 'ऋण अवधि (वर्ष)')}
-                  </label>
-                  <span className="text-xl font-black text-[#0B75C9]">
-                    {loanTenure || '1'} {tr('yrs', 'वर्ष')}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="30"
-                  step="1"
-                  value={loanTenure || '5'}
-                  onChange={(e) => setLoanTenure(e.target.value)}
-                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #15803D 0%, #15803D ${((loanTenure || 5) - 1) / (30 - 1) * 100}%, #BFDBFE ${((loanTenure || 5) - 1) / (30 - 1) * 100}%, #BFDBFE 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-xs font-semibold text-slate-500">
-                  <span>1 {tr('year', 'वर्ष')}</span>
-                  <span>30 {tr('years', 'वर्ष')}</span>
-                </div>
-                {loanTenure && (
-                  <p className="text-xs text-[#0B75C9] font-bold bg-blue-50 p-2 rounded">
-                    = {parseInt(loanTenure) * 12} {tr('months', 'महीने')}
-                  </p>
-                )}
-              </div>
-
-              {/* Interest Rate Slider */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-extrabold text-[#0B3D71]">
-                    {tr('Interest Rate (% p.a.)', 'ब्याज दर (% वार्षिक)')}
-                  </label>
-                  <span className="text-xl font-black text-[#D97706]">
-                    {interestRate}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="4"
-                  max="12"
-                  step="0.5"
-                  value={interestRate}
-                  onChange={(e) => setInterestRate(e.target.value)}
-                  className="w-full h-2 bg-[#BFDBFE] rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #D97706 0%, #D97706 ${(interestRate - 4) / (12 - 4) * 100}%, #BFDBFE ${(interestRate - 4) / (12 - 4) * 100}%, #BFDBFE 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-xs font-semibold text-slate-500">
-                  <span>4%</span>
-                  <span>12%</span>
-                </div>
-                <div className="bg-[#FEF3C7] border border-[#FDE68A] p-2 rounded text-xs font-bold text-[#92400E]">
-                  {interestRate === '5.5' && tr('PM Mudra - Lowest', 'PM मुद्रा - सबसे कम')}
-                  {interestRate === '6.5' && tr('PM Stand-up India', 'PM स्टैंड-अप इंडिया')}
-                  {interestRate === '7' && 'PMEGP'}
-                  {interestRate === '7.5' && 'PM KUSUM'}
-                  {interestRate === '8' && tr('Standard Rate', 'सामान्य दर')}
-                  {interestRate === '8.5' && tr('Standard+ Rate', 'सामान्य + दर')}
-                  {!['5.5', '6.5', '7', '7.5', '8', '8.5'].includes(interestRate) && tr('Custom Rate', 'कस्टम दर')}
-                </div>
-              </div>
+        {/* Card 1: Calculator Form — one uniform accent color throughout (no
+            multicolored per-field theming), all text sized up 35% from base. */}
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-7">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0B75C9] flex items-center justify-center shrink-0">
+              <Banknote className="w-5 h-5" />
             </div>
-
-            {/* Right Side: Results Display */}
-            <div className="space-y-4">
-              <div className="bg-white border-2 border-[#BFDBFE] rounded-xl p-6 space-y-5">
-                
-                {emiResult ? (
-                  <>
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        {tr('Monthly EMI', 'मासिक किस्त')}
-                      </p>
-                      <p className="text-4xl font-black text-[#0B75C9]">
-                        ₹ {parseInt(emiResult.emi).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
-                      </p>
-                    </div>
-
-                    <div className="border-t-2 border-slate-200 pt-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-600">
-                          {tr('Total Amount', 'कुल राशि')}
-                        </span>
-                        <span className="text-lg font-black text-[#0B3D71]">
-                          ₹ {parseInt(emiResult.totalAmount).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-600">
-                          {tr('Total Interest', 'कुल ब्याज')}
-                        </span>
-                        <span className="text-lg font-black text-[#D97706]">
-                          ₹ {parseInt(emiResult.totalInterest).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#E8F5E9] border-l-4 border-[#15803D] p-4 rounded-lg">
-                      <p className="text-xs font-bold text-[#065F46] uppercase tracking-widest mb-1">
-                        {tr('Note', 'सूचना')}
-                      </p>
-                      <p className="text-sm text-[#15803D] font-semibold leading-relaxed">
-                        {tr('This is an estimate. Actual EMI may vary as per bank policies. Contact your bank for exact details.', 'यह एक अनुमानित गणना है। वास्तविक EMI बैंक के नियमों के अनुसार भिन्न हो सकता है। सटीक जानकारी के लिए बैंक से संपर्क करें।')}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full py-8 space-y-3">
-                    <div className="w-16 h-16 rounded-full bg-[#E0E7FF] flex items-center justify-center text-2xl">
-                      📊
-                    </div>
-                    <p className="text-center text-slate-600 font-semibold">
-                      {tr('Enter loan amount, tenure and rate to see your EMI', 'लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें')}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Info Box */}
-              <div className="bg-[#FEF3C7] border-2 border-[#FDE68A] rounded-lg p-4 space-y-2">
-                <p className="text-xs font-extrabold text-[#78350F] uppercase tracking-widest">
-                  {tr('Popular Schemes', 'मुख्य योजनाएँ')}
-                </p>
-                <ul className="text-sm text-[#92400E] font-semibold space-y-1.5">
-                  <li>• {tr('PM Mudra: ₹50,000 - ₹10 Lakh', 'PM मुद्रा: ₹50,000 - ₹10 लाख')}</li>
-                  <li>• {tr('PMEGP: ₹25 - ₹100 Lakh', 'PMEGP: ₹25 - ₹100 लाख')}</li>
-                  <li>• {tr('PM Kisan: Agriculture loan support', 'PM किसान: कृषि ऋण सहायता')}</li>
-                </ul>
-              </div>
+            <div>
+              <h3 className="text-[1.519rem] font-black text-[#0B3D71] leading-tight">{tr('EMI Calculator', 'EMI कैलकुलेटर')}</h3>
+              <p className="text-[1.0125rem] text-slate-500 font-semibold">{tr('Estimate your monthly EMI for government loans', 'सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं')}</p>
             </div>
           </div>
+
+          {/* Loan Amount Slider */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Loan Amount (₹)', 'लोन राशि (₹)')}</label>
+              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">
+                ₹ {parseInt(loanAmount || 0).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
+              </span>
+            </div>
+            <input
+              type="range" min="10000" max="5000000" step="10000" value={loanAmount}
+              onChange={(e) => setLoanAmount(e.target.value)}
+              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
+              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(loanAmount - 10000) / (5000000 - 10000) * 100}%, #E2E8F0 ${(loanAmount - 10000) / (5000000 - 10000) * 100}%, #E2E8F0 100%)` }}
+            />
+            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
+              <span>₹10,000</span><span>₹50,00,000</span>
+            </div>
+          </div>
+
+          {/* Loan Tenure Slider */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Loan Tenure (Years)', 'ऋण अवधि (वर्ष)')}</label>
+              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">
+                {loanTenure} {tr('years', 'वर्ष')}
+              </span>
+            </div>
+            <input
+              type="range" min="1" max="30" step="1" value={loanTenure}
+              onChange={(e) => setLoanTenure(e.target.value)}
+              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
+              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(loanTenure - 1) / (30 - 1) * 100}%, #E2E8F0 ${(loanTenure - 1) / (30 - 1) * 100}%, #E2E8F0 100%)` }}
+            />
+            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
+              <span>1 {tr('year', 'वर्ष')}</span><span>30 {tr('years', 'वर्ष')}</span>
+            </div>
+          </div>
+
+          {/* Interest Rate Slider */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Interest Rate (% p.a.)', 'ब्याज दर (% वार्षिक)')}</label>
+              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">{interestRate}%</span>
+            </div>
+            <input
+              type="range" min="4" max="12" step="0.5" value={interestRate}
+              onChange={(e) => setInterestRate(e.target.value)}
+              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
+              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(interestRate - 4) / (12 - 4) * 100}%, #E2E8F0 ${(interestRate - 4) / (12 - 4) * 100}%, #E2E8F0 100%)` }}
+            />
+            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
+              <span>4%</span><span>12%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Estimated EMI */}
+        <div className="lg:col-span-4 bg-emerald-50/70 border border-emerald-100 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-emerald-700" />
+            <h4 className="text-sm font-black text-emerald-800">{tr('Your Estimated EMI', 'आपकी अनुमानित EMI')}</h4>
+          </div>
+
+          {emiResult ? (
+            <>
+              <div>
+                <p className="text-3xl font-black text-slate-900">₹ {parseInt(emiResult.emi).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}</p>
+                <p className="text-[1.275rem] text-slate-500 font-semibold mt-0.5">{tr('per month', 'प्रति माह')}</p>
+              </div>
+
+              <div className="bg-white/70 rounded-xl divide-y divide-emerald-100 border border-emerald-100">
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Loan Amount', 'लोन राशि')}</span>
+                  <span className="text-[1.4875rem] font-bold text-slate-800">₹ {parseInt(loanAmount || 0).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}</span>
+                </div>
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Tenure', 'अवधि')}</span>
+                  <span className="text-[1.4875rem] font-bold text-slate-800">{loanTenure} {tr('years', 'वर्ष')}</span>
+                </div>
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Interest Rate', 'ब्याज दर')}</span>
+                  <span className="text-[1.4875rem] font-bold text-slate-800">{interestRate}% {tr('p.a.', 'वार्षिक')}</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 text-[1.275rem] text-emerald-800 font-semibold leading-relaxed">
+                <Info className="w-4 h-4 shrink-0 mt-1" />
+                {tr('This is an estimate. Actual EMI may vary based on the scheme and lender terms.', 'यह एक अनुमान है। वास्तविक EMI योजना और ऋणदाता की शर्तों के अनुसार भिन्न हो सकती है।')}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-slate-600 font-semibold py-6 text-center">
+              {tr('Enter loan amount, tenure and rate to see your EMI', 'लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें')}
+            </p>
+          )}
+        </div>
+
+        {/* Card 3: Popular Schemes */}
+        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
+          <div className="flex items-start gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+              <Star className="w-4 h-4" fill="currentColor" />
+            </div>
+            <div>
+              <h4 className="text-[1.18125rem] font-black text-[#0B3D71]">{tr('Popular Schemes', 'लोकप्रिय योजनाएँ')}</h4>
+              <p className="text-[1.0125rem] text-slate-500 font-semibold mt-0.5">{tr('Explore some of the most searched government schemes', 'सबसे अधिक खोजी गई सरकारी योजनाओं को देखें')}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { Icon: Landmark, bg: 'bg-red-50', color: 'text-red-500', title: 'PM Mudra', enSub: '₹50,000 – ₹10 Lakh', hiSub: '₹50,000 – ₹10 लाख', enDesc: 'For small business owners', hiDesc: 'छोटे व्यवसायियों के लिए' },
+              { Icon: Briefcase, bg: 'bg-blue-50', color: 'text-blue-600', title: 'PMEGP', enSub: '₹25 – ₹100 Lakh', hiSub: '₹25 – ₹100 लाख', enDesc: 'For new enterprises', hiDesc: 'नए उद्यमों के लिए' },
+              { Icon: Sprout, bg: 'bg-emerald-50', color: 'text-emerald-600', title: 'PM Kisan', enSub: 'Agriculture loan support', hiSub: 'कृषि ऋण सहायता', enDesc: 'For farmers', hiDesc: 'किसानों के लिए' },
+            ].map(({ Icon, bg, color, title, enSub, hiSub, enDesc, hiDesc }) => (
+              <button key={title} onClick={onBrowseAllSchemes}
+                className="w-full flex items-center gap-3 text-left p-2 rounded-xl hover:bg-slate-50 transition-colors group">
+                <div className={`w-9 h-9 rounded-lg ${bg} ${color} flex items-center justify-center shrink-0`}>
+                  <Icon className="w-4.5 h-4.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[1.18125rem] font-bold text-slate-800">{title}</div>
+                  <div className="text-[1.0125rem] text-slate-500 font-medium truncate">{tr(enSub, hiSub)} · {tr(enDesc, hiDesc)}</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 shrink-0" />
+              </button>
+            ))}
+          </div>
+
+          <button onClick={onBrowseAllSchemes} className="text-[1.18125rem] font-bold text-[#0B75C9] flex items-center gap-1 hover:underline">
+            {tr('View all schemes', 'सभी योजनाएँ देखें')} <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </section>
 

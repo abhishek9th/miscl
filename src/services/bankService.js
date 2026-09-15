@@ -1,9 +1,11 @@
+// Logos are self-hosted (public/bank-logos/) from Wikimedia Commons rather than
+// hotlinked, so they keep working regardless of Commons' own availability.
 const COMMON_BANKS = [
-  { name: 'State Bank of India', shortName: 'SBI', searchName: 'State Bank of India' },
-  { name: 'Punjab National Bank', shortName: 'PNB', searchName: 'Punjab National Bank' },
-  { name: 'Bank of Baroda', shortName: 'BOB', searchName: 'Bank of Baroda' },
-  { name: 'Canara Bank', shortName: 'Canara Bank', searchName: 'Canara Bank' },
-  { name: 'Union Bank of India', shortName: 'Union Bank', searchName: 'Union Bank of India' }
+  { name: 'State Bank of India', shortName: 'SBI', searchName: 'State Bank of India', logo: '/bank-logos/sbi.svg' },
+  { name: 'Punjab National Bank', shortName: 'PNB', searchName: 'Punjab National Bank', logo: '/bank-logos/pnb.svg' },
+  { name: 'Bank of Baroda', shortName: 'BOB', searchName: 'Bank of Baroda', logo: '/bank-logos/bob.png' },
+  { name: 'Canara Bank', shortName: 'Canara Bank', searchName: 'Canara Bank', logo: '/bank-logos/canara.svg' },
+  { name: 'Union Bank of India', shortName: 'Union Bank', searchName: 'Union Bank of India', logo: '/bank-logos/union.svg' }
 ];
 
 const SCHEME_PROVIDERS = {

@@ -14,6 +14,22 @@
   }
 }
 
+/* Trust-banner ticker: two copies of the text placed back to back inside a
+   track that scrolls left by exactly one copy's width (-50%), so the loop
+   seams invisibly — used for the "every scheme is real" banner. */
+@keyframes marquee-loop {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-loop 22s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 /* Accessible focus outline */
 *:focus-visible {
   outline: 3px solid #ea580c !important;
@@ -47,6 +63,17 @@
 .official-portal .rounded-2xl {
   border-radius: 0;
 }
+
+/* The EMI calculator section intentionally opts back into soft rounded cards
+   (matching its reference design) rather than the squared-off portal look
+   above. Same selector specificity as the reset — this wins on source order. */
+.emi-card-section .rounded-lg { border-radius: 0.5rem; }
+.emi-card-section .rounded-xl { border-radius: 0.75rem; }
+.emi-card-section .rounded-2xl { border-radius: 1rem; }
+
+.support-cards-section .rounded-lg { border-radius: 0.5rem; }
+.support-cards-section .rounded-xl { border-radius: 0.75rem; }
+.support-cards-section .rounded-2xl { border-radius: 1rem; }
 
 /* Custom Range Slider Styling */
 .slider {

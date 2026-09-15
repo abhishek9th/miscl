@@ -20,9 +20,13 @@ export default {
           gold: '#B45309'
         }
       },
+      // Open Sans is the site's primary font everywhere. It has no Devanagari
+      // glyphs, so the browser automatically falls through to Noto Sans
+      // Devanagari (per-character) for Hindi text — English/Latin renders in
+      // Open Sans, Hindi keeps rendering correctly in Noto Sans Devanagari.
       fontFamily: {
-        hindi: ['"Noto Sans Devanagari"', 'Inter', 'system-ui', 'sans-serif'],
-        sans: ['Inter', '"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
+        hindi: ['"Open Sans"', '"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
+        sans: ['"Open Sans"', '"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'rural-lg': '1.25rem',

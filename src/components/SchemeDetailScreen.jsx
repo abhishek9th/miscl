@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench } from 'lucide-react';
+import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench, Wand2, ClipboardList } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { getBankNavigationUrl, getGeneralBankNavigationUrl, getSchemeProviders } from '../services/bankService';
+import ApplicationJourney from './ApplicationJourney';
+import ApplicationReadiness from './ApplicationReadiness';
+import SchemeConflictNotice from './SchemeConflictNotice';
 import { useI18n } from '../i18n';
 
 // Field labels authored in Hindi; runtime-translated to the active language.
@@ -46,9 +49,22 @@ function describeEligibility(scheme, criteria, tr, trText) {
   return items;
 }
 
-export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLocation = {}, onBack }) {
+export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLocation = {}, onBack, onRegisterScheme }) {
   const { tr, trText, trList, lang: currentLang } = useI18n();
   const [speaking, setSpeaking] = useState(false);
+  const [regState, setRegState] = useState('idle'); // idle | saving | done | error
+  const [showJourney, setShowJourney] = useState(false);
+
+  const handleRegister = async () => {
+    if (!onRegisterScheme || regState === 'saving' || regState === 'done') return;
+    setRegState('saving');
+    try {
+      await onRegisterScheme(scheme);
+      setRegState('done');
+    } catch {
+      setRegState('error');
+    }
+  };
   const isHindi = currentLang !== 'en';
   const Icon = getSchemeIcon(scheme);
   const title = tr(scheme.name, scheme.name_hi || scheme.name);
@@ -118,12 +134,13 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
     <section className="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-5 sm:p-6">
       <h2 className="text-xl sm:text-2xl font-black text-gov-navy flex items-center gap-3"><Building2 className="w-7 h-7 text-gov-saffron" />{tr('Where can you get this scheme?', 'कहाँ से योजना मिलेगी?')}</h2>
       <p className="mt-3 text-base text-slate-700 font-semibold leading-relaxed">{tr(`Apply through ${providers.type}.`, `इस योजना के लिए ${providers.type_hi} में आवेदन करें।`)}</p>
-      {providers.banks?.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{providers.banks.map((bank) => <span key={bank.shortName} className="bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-bold text-slate-800">{bank.shortName}</span>)}</div>}
-      <p className="mt-4 text-sm text-slate-600">{tr(`Your location: ${userLocation.state || userCriteria.state || 'India'}. Choose a bank to find the nearest branch.`, `आपका स्थान: ${userLocation.state || userCriteria.state || 'भारत'}। निकटतम शाखा जाने के लिए बैंक चुनें।`)}</p>
-      <div className="mt-4 flex flex-col sm:flex-row gap-3">
-        {providers.banks?.slice(0, 3).map((bank) => <a key={bank.shortName} href={getBankNavigationUrl(bank, userLocation)} target="_blank" rel="noopener noreferrer" className="bg-gov-navy hover:bg-[#083d71] text-white rounded-md py-3 px-4 font-extrabold flex items-center justify-center gap-2"><MapPin className="w-5 h-5" />{tr(`Find ${bank.shortName}`, `${bank.shortName} खोजें`)}</a>)}
-        {!providers.banks?.length && <a href={getGeneralBankNavigationUrl(userLocation)} target="_blank" rel="noopener noreferrer" className="bg-gov-navy hover:bg-[#083d71] text-white rounded-md py-3 px-4 font-extrabold flex items-center justify-center gap-2"><MapPin className="w-5 h-5" />{tr('Find nearest bank', 'निकटतम बैंक खोजें')}</a>}
-      </div>
+      {providers.banks?.length > 0 && <div className="mt-4 flex flex-wrap gap-3">{providers.banks.map((bank) => (
+        <span key={bank.shortName} title={bank.name} className="bg-white border border-slate-300 rounded-md px-3 py-2 h-14 flex items-center justify-center min-w-[90px]">
+          {bank.logo
+            ? <img src={bank.logo} alt={bank.name} className="h-8 max-w-[110px] object-contain" onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement('span'), { textContent: bank.shortName, className: 'text-sm font-bold text-slate-800' })); }} />
+            : <span className="text-sm font-bold text-slate-800">{bank.shortName}</span>}
+        </span>
+      ))}</div>}
       <p className="mt-3 text-xs text-slate-500">{tr('Confirm scheme eligibility and availability with the branch before visiting.', 'शाखा में जाने से पहले पात्रता और उपलब्धता की पुष्टि करें।')}</p>
     </section>
 
@@ -137,10 +154,50 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
       <ol className="mt-5 space-y-4">{steps.map((step, index) => <li key={index} className="flex gap-4 items-start"><span className="w-8 h-8 rounded-full bg-gov-saffron text-white shrink-0 font-black flex items-center justify-center">{index + 1}</span><span className="pt-1 text-base sm:text-lg font-medium">{step}</span></li>)}</ol>
     </section>
 
-    <section className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
-      {scheme.official_link ? <a href={scheme.official_link} target="_blank" rel="noopener noreferrer" className="bg-[#0b4f91] hover:bg-[#083d71] text-white rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2">{tr('Visit official website', 'आधिकारिक वेबसाइट पर जाएँ')} <ExternalLink className="w-5 h-5" /></a> : <button disabled className="bg-slate-200 text-slate-500 rounded-md py-4 px-5 font-bold">{tr('Official application link unavailable', 'आधिकारिक आवेदन लिंक उपलब्ध नहीं है')}</button>}
-      <button onClick={() => window.print()} className="border-2 border-slate-300 hover:border-gov-navy text-gov-navy rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2"><FileText className="w-5 h-5" />{tr('Scheme details', 'योजना की विस्तृत जानकारी')}</button>
+    <section className="mt-7 bg-white border-2 border-slate-200 rounded-lg p-5 no-print">
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 w-11 h-11 rounded-full bg-slate-100 text-gov-navy flex items-center justify-center"><ClipboardList className="w-6 h-6" /></div>
+        <div className="flex-1">
+          <h2 className="text-lg sm:text-xl font-black text-gov-navy">{tr('Application Readiness & Document Checker', 'आवेदन तैयारी एवं दस्तावेज़ जाँच')}</h2>
+          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSetu compares your saved profile against this scheme’s verified requirements and tells you exactly what’s ready, what’s missing, and what could delay your application — before you visit the portal or a Jan Seva Kendra.', 'SchemeSetu आपकी सहेजी गई प्रोफ़ाइल की तुलना इस योजना की सत्यापित आवश्यकताओं से करता है और बताता है कि क्या तैयार है, क्या छूट रहा है, और आपके आवेदन में देरी क्या कर सकती है।')}</p>
+          <SchemeConflictNotice schemeId={scheme.id} />
+          <div className="mt-4 border-t border-slate-200 pt-4">
+            <ApplicationReadiness scheme={scheme} />
+          </div>
+        </div>
+      </div>
     </section>
+
+    <section className="mt-5 bg-[#f5f8ff] border border-blue-200 rounded-lg p-5 no-print">
+      <button onClick={() => setShowJourney(true)} className="flex items-start gap-3 w-full text-left group">
+        <div className="shrink-0 w-11 h-11 rounded-full bg-gov-navy text-white flex items-center justify-center group-hover:bg-[#083d71] transition-colors"><Wand2 className="w-6 h-6" /></div>
+        <div className="flex-1">
+          <h2 className="text-lg sm:text-xl font-black text-gov-navy group-hover:underline">{tr('Apply with SchemeSetu (guided)', 'SchemeSetu के साथ आवेदन करें (निर्देशित)')}</h2>
+          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSetu auto-fills what it already knows, asks only for what is missing, and pauses for OTP and your approval. You stay in control of every security step.', 'SchemeSetu वह जानकारी अपने आप भरता है जो उसे पहले से पता है, केवल छूटी हुई जानकारी पूछता है, और ओटीपी व आपकी स्वीकृति के लिए रुकता है। हर सुरक्षा चरण आपके नियंत्रण में रहता है।')}</p>
+          <p className="mt-2 text-[11px] text-slate-500">{tr('Runs on a demonstration portal. For a real submission, use the official website below.', 'यह प्रदर्शन पोर्टल पर चलता है। वास्तविक आवेदन के लिए नीचे दी गई आधिकारिक वेबसाइट का उपयोग करें।')}</p>
+        </div>
+      </button>
+    </section>
+
+    {showJourney && <ApplicationJourney scheme={scheme} onClose={() => setShowJourney(false)} />}
+
+    <section className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
+      {scheme.official_link ? <a href={scheme.official_link} target="_blank" rel="noopener noreferrer" className="bg-[#0b4f91] hover:bg-[#083d71] text-white rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2">{tr('Visit official website', 'आधिकारिक वेबसाइट पर जाएँ')} <ExternalLink className="w-5 h-5" /></a> : <button disabled className="bg-slate-200 text-slate-500 rounded-md py-4 px-5 font-bold">{tr('Official application link unavailable', 'आधिकारिक आवेदन लिंक उपलब्ध नहीं है')}</button>}
+      {onRegisterScheme ? (
+        <button onClick={handleRegister} disabled={regState === 'saving' || regState === 'done'}
+          className={`rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2 ${regState === 'done' ? 'bg-emerald-600 text-white' : 'bg-gov-saffron hover:bg-orange-700 text-white'} disabled:opacity-90`}>
+          <CheckCircle2 className="w-5 h-5" />
+          {regState === 'done'
+            ? tr('Registered ✓', 'पंजीकृत ✓')
+            : regState === 'saving'
+              ? tr('Saving…', 'सहेजा जा रहा है…')
+              : tr('Register for this scheme', 'इस योजना के लिए पंजीकरण करें')}
+        </button>
+      ) : (
+        <button onClick={() => window.print()} className="border-2 border-slate-300 hover:border-gov-navy text-gov-navy rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2"><FileText className="w-5 h-5" />{tr('Scheme details', 'योजना की विस्तृत जानकारी')}</button>
+      )}
+    </section>
+    {regState === 'error' && <p className="mt-2 text-sm text-red-600 no-print">{tr('Could not save. Please try again.', 'सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।')}</p>}
 
     <footer className="mt-7 pt-4 border-t border-slate-200 text-xs sm:text-sm text-slate-500 flex flex-col sm:flex-row gap-2 justify-between"><span>ℹ {tr('This information is based on verified official government sources.', 'यह जानकारी सत्यापित आधिकारिक सरकारी स्रोतों पर आधारित है।')}</span><span>{tr('Source: Official scheme portal', 'स्रोत: योजना का आधिकारिक पोर्टल')}</span></footer>
   </div>;

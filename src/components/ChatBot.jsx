@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mic, Send, ChevronDown, Volume2, Volume1 } from 'lucide-react';
+import { Mic, Send, ChevronDown, Volume2, Volume1, Square, Loader2 } from 'lucide-react';
 import { processNaturalLanguageQuery } from '../services/aiService';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { cleanupRecording, startBrowserFallback, startGroqRecording, stopGroqRecording } from '../services/voiceService';
@@ -16,6 +16,7 @@ export default function ChatBot({ onVoiceProfileReady }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const fallbackRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const hasSpokenGreetingRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,16 +41,22 @@ export default function ChatBot({ onVoiceProfileReady }) {
     setIsSpeaking(false);
   };
 
-  // Initialize chat
+  // Initialize chat — and keep the greeting itself live-translated if the
+  // user switches language before typing anything (it was previously frozen
+  // in whatever language was active the moment the chat first opened).
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      const greeting = tr("Hello! I'm SchemeSetu. What kind of government scheme are you looking for?", 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?');
-      
-      setMessages([{ id: 1, type: 'bot', text: greeting }]);
+    if (!isOpen) { hasSpokenGreetingRef.current = false; return; }
+    const greeting = tr("Hello! I'm SchemeSetu. What kind of government scheme are you looking for?", 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?');
+    setMessages((prev) => (prev.length === 0 || (prev.length === 1 && prev[0].id === 1))
+      ? [{ id: 1, type: 'bot', text: greeting }]
+      : prev);
+    if (!hasSpokenGreetingRef.current) {
+      hasSpokenGreetingRef.current = true;
       speak(greeting);
     }
     return () => { stopTextAloud(); cleanupRecording(); fallbackRef.current?.abort?.(); };
-  }, [isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, currentLang]);
 
   // Speak bot messages
   useEffect(() => {
@@ -221,42 +228,67 @@ export default function ChatBot({ onVoiceProfileReady }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="bg-white border-t-2 border-[#BFDBFE] p-3 space-y-3">
+      {/* Input Area — one adaptive button in place of the arrow: mic when the
+          box is empty, send arrow once there's text to send (typed or from a
+          finished voice transcription), and a stop icon while recording. */}
+      <div className="bg-white border-t-2 border-[#BFDBFE] p-3">
         <div className="flex gap-2">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !isProcessing && sendMessage()}
-            placeholder={tr('Type message...', 'संदेश भेजें...')}
+            onKeyPress={(e) => e.key === 'Enter' && !isProcessing && inputText.trim() && sendMessage()}
+            placeholder={voiceState === 'recording'
+              ? tr('Listening…', 'सुन रहे हैं…')
+              : tr('Type message...', 'संदेश भेजें...')}
             className="flex-1 px-4 py-2.5 border-2 border-[#BFDBFE] rounded-xl focus:outline-none focus:border-[#0B75C9] focus:ring-2 focus:ring-[#60A5FA] font-semibold text-slate-800"
-            disabled={isProcessing}
+            disabled={isProcessing || voiceState === 'recording' || voiceState === 'transcribing'}
           />
-          <button
-            onClick={sendMessage}
-            disabled={!inputText.trim() || isProcessing}
-            className="bg-[#0B75C9] hover:bg-[#075C9C] text-white p-2.5 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Send message"
-          >
-            <Send className="w-5 h-5" />
-          </button>
+          {(() => {
+            if (voiceState === 'transcribing') {
+              return (
+                <button disabled className="bg-[#0B75C9] text-white p-2.5 rounded-xl opacity-60" aria-label={tr('Transcribing…', 'लिखा जा रहा है…')}>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                </button>
+              );
+            }
+            if (voiceState === 'recording') {
+              return (
+                <button
+                  onClick={toggleRecording}
+                  className="bg-red-600 hover:bg-red-700 text-white p-2.5 rounded-xl transition animate-pulse"
+                  aria-label={tr('Stop recording', 'रिकॉर्डिंग रोकें')}
+                  title={tr('Recording… click to stop', 'रिकॉर्डिंग जारी है… रोकने के लिए क्लिक करें')}
+                >
+                  <Square className="w-5 h-5" fill="currentColor" />
+                </button>
+              );
+            }
+            if (inputText.trim()) {
+              return (
+                <button
+                  onClick={sendMessage}
+                  disabled={isProcessing}
+                  className="bg-[#0B75C9] hover:bg-[#075C9C] text-white p-2.5 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={tr('Send message', 'संदेश भेजें')}
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              );
+            }
+            return (
+              <button
+                onClick={toggleRecording}
+                disabled={isProcessing || voiceState === 'requesting_permission'}
+                className="bg-green-600 hover:bg-green-700 text-white p-2.5 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={tr('Speak', 'माइक से बोलें')}
+                title={tr('Speak', 'माइक से बोलें')}
+              >
+                <Mic className="w-5 h-5" />
+              </button>
+            );
+          })()}
         </div>
-
-        <button
-          onClick={toggleRecording}
-          disabled={isProcessing || ['requesting_permission', 'transcribing'].includes(voiceState)}
-          className={`w-full py-2.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition ${
-            voiceState === 'recording'
-              ? 'bg-red-600 hover:bg-red-700'
-              : 'bg-green-600 hover:bg-green-700'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          <Mic className="w-4 h-4" />
-          {voiceState === 'recording'
-            ? tr('Recording... (click to stop)', 'रिकॉर्डिंग... (क्लिक करके रोकें)')
-            : tr('Speak', 'माइक से बोलें')}
-        </button>
       </div>
     </div>
   );

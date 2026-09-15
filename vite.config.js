@@ -9,7 +9,9 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        // Use the numeric IPv4 address (not "localhost") so Windows doesn't try
+        // both ::1 and 127.0.0.1 and flood sockets (ENOBUFS proxy errors).
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true
       }
     }

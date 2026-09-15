@@ -58,6 +58,25 @@ export async function processNaturalLanguageQuery(queryText, currentProfile = {}
   throw lastError || new Error('Profile analysis unavailable');
 }
 
+// Additional real government schemes beyond SchemeSetu's own small structured
+// catalogue — clearly AI-suggested, never treated as verified. Fails soft
+// (returns []) since this is a supplementary, non-critical enhancement.
+export async function suggestAdditionalSchemes(criteria, alreadyShownIds = [], language = 'hi') {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/schemes/suggest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ criteria, alreadyShown: alreadyShownIds, language }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.suggestions) ? data.suggestions : [];
+  } catch {
+    return [];
+  }
+}
+
 export function fallbackLocalNLP(queryText) {
   const text = queryText.toLowerCase();
 

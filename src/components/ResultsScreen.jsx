@@ -1,8 +1,10 @@
 import React from 'react';
-import { ArrowRight, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, RotateCcw, Volume2, VolumeX, Search, Sparkles, ExternalLink } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
+import { suggestAdditionalSchemes } from '../services/aiService';
+import SchemeStatusStrip from './SchemeStatusStrip';
 
 export default function ResultsScreen({
   schemes,
@@ -13,6 +15,20 @@ export default function ResultsScreen({
   const { t, tr, trText, lang: currentLang } = useI18n();
   const [speaking, setSpeaking] = useState(false);
   const isHindi = currentLang !== 'en';
+
+  // Beyond SchemeSetu's own small verified catalogue, ask Groq to name other
+  // REAL government schemes worth checking for this profile — clearly
+  // separated below and never merged with the verified results, since these
+  // are unverified suggestions the user must confirm on the official portal.
+  const [aiSuggestions, setAiSuggestions] = useState(null); // null = loading, [] = none found
+  useEffect(() => {
+    let active = true;
+    setAiSuggestions(null);
+    suggestAdditionalSchemes(userCriteria, schemes.map((s) => s.name), currentLang)
+      .then((list) => { if (active) setAiSuggestions(list); });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schemes, currentLang]);
   const readResults = () => {
     if (speaking) { stopTextAloud(); setSpeaking(false); return; }
     const top = schemes[0];
@@ -34,31 +50,21 @@ export default function ResultsScreen({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-200">
-      {/* Top Banner */}
-      <div className="bg-gov-navy text-white rounded-2xl p-5 sm:p-6 shadow-md border-b-4 border-gov-saffron flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 bg-emerald-700 text-white font-extrabold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
-            🟢 {t('matching_schemes')}
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-sans">
-            {schemes.length} {t('matching_schemes')}
-          </h2>
-          <p className="text-sm text-amber-200">
-            {tr('Based on your input, here are the government schemes you may qualify for:', 'आपकी दी गई जानकारी के आधार पर, ये योजनाएँ आपके लिए उपयुक्त हो सकती हैं:')}
-          </p>
+      {/* Slim heading with a thin blue underline */}
+      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-600 pb-2 font-sans">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gov-navy">
+          {tr('Available schemes for you', 'आपके लिए उपलब्ध योजनाएँ')}
+          <span className="ml-1.5 text-slate-400 font-bold">({schemes.length})</span>
+        </h2>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={onRestart} className="text-gov-navy hover:text-gov-saffron font-bold text-sm flex items-center gap-1.5">
+            <RotateCcw className="w-4 h-4" /> <span className="hidden sm:inline">{t('restart')}</span>
+          </button>
+          <button onClick={readResults} className="text-gov-navy hover:text-gov-saffron font-bold text-sm flex items-center gap-1.5">
+            {speaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            <span className="hidden sm:inline">{speaking ? tr('Stop', 'रोकें') : tr('Listen', 'सुनें')}</span>
+          </button>
         </div>
-
-        <button
-          onClick={onRestart}
-          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold py-2.5 px-4 rounded-xl text-sm flex items-center gap-2 shrink-0 transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>{t('restart')}</span>
-        </button>
-        <button onClick={readResults} className="bg-amber-100 hover:bg-amber-200 text-gov-navy border border-amber-300 font-bold py-2.5 px-4 rounded-xl text-sm flex items-center gap-2 shrink-0 transition-colors">
-          {speaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          {speaking ? tr('Stop', 'रोकें') : tr('Listen to results', 'परिणाम सुनें')}
-        </button>
       </div>
 
       {/* Scheme Cards List */}
@@ -68,25 +74,19 @@ export default function ResultsScreen({
           const schemeTitle = tr(scheme.name, scheme.name_hi || scheme.name);
 
           return (
-            <div 
+            <div
               key={scheme.id}
-              className="gov-card p-5 sm:p-6 space-y-4 hover:shadow-md transition-all border-l-8 border-l-gov-navy"
+              className="gov-card overflow-hidden hover:shadow-md transition-all border-l-8 border-l-gov-navy"
             >
-              {/* Card Top Title & Status */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+              {/* Full-width status strip flowing right-to-left across the card top */}
+              <SchemeStatusStrip status={isPartial ? 'potential' : 'available'} />
+
+              <div className="p-5 sm:p-6 space-y-4">
+              {/* Card Title */}
+              <div className="border-b border-slate-200 pb-3">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-gov-navy leading-tight">
                   {schemeTitle}
                 </h3>
-                
-                {isPartial ? (
-                  <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-950 border border-amber-300 font-extrabold text-sm px-3 py-1 rounded-full shrink-0">
-                    🟡 {t('partial_match_badge')}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-950 border border-emerald-300 font-extrabold text-sm px-3 py-1 rounded-full shrink-0">
-                    🟢 {t('eligible_badge')}
-                  </span>
-                )}
               </div>
 
               {/* Description */}
@@ -128,10 +128,58 @@ export default function ResultsScreen({
                 <span>{t('view_details')}</span>
                 <ArrowRight className="w-6 h-6" />
               </button>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {/* AI-suggested schemes — beyond SchemeSetu's own verified catalogue.
+          Deliberately separate and differently styled: these are NOT
+          verified entries, just real scheme names Groq recognises as
+          potentially relevant, which the user must confirm on the official
+          portal. Never merged into the "matching schemes" count above. */}
+      {(aiSuggestions === null || aiSuggestions.length > 0) && (
+        <div className="border-t-2 border-dashed border-slate-300 pt-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-slate-400" />
+            <h3 className="text-lg font-extrabold text-slate-700">
+              {tr('Other schemes worth checking', 'जाँचने योग्य अन्य योजनाएँ')}
+            </h3>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            {tr(
+              'These are additional government schemes SchemeSetu is aware of but has not yet verified in detail. Confirm eligibility and details on the official portal.',
+              'ये अतिरिक्त सरकारी योजनाएँ हैं जिनके बारे में SchemeSetu को जानकारी है परंतु अभी तक विस्तार से सत्यापित नहीं किया गया है। कृपया पात्रता व विवरण आधिकारिक पोर्टल पर सत्यापित करें।'
+            )}
+          </p>
+
+          {aiSuggestions === null && (
+            <p className="text-sm text-slate-400 italic">{tr('Checking for more schemes…', 'अधिक योजनाओं की जाँच की जा रही है…')}</p>
+          )}
+
+          {Array.isArray(aiSuggestions) && aiSuggestions.map((s, i) => (
+            <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-start justify-between gap-3">
+              <div>
+                <div className="font-bold text-slate-800">{s.name}</div>
+                <div className="text-sm text-slate-600 mt-0.5">{s.reason}</div>
+                {s.category && s.category !== 'unknown' && (
+                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase text-slate-500 bg-slate-200 rounded px-1.5 py-0.5">
+                    {s.category === 'central' ? tr('Central Scheme', 'केंद्रीय योजना') : tr('State Scheme', 'राज्य योजना')}
+                  </span>
+                )}
+              </div>
+              <a
+                href={`https://www.myscheme.gov.in/search/scheme?q=${encodeURIComponent(s.name)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="shrink-0 flex items-center gap-1.5 text-sm font-bold text-gov-navy hover:underline whitespace-nowrap"
+              >
+                <Search className="w-4 h-4" /> {tr('Search', 'खोजें')} <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

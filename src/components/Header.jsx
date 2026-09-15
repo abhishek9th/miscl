@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Languages, Check, ChevronDown, Accessibility } from 'lucide-react';
+import { Languages, Check, ChevronDown, Accessibility, User, LogIn } from 'lucide-react';
 import { LANGUAGES } from '../data/translations';
 import { useI18n } from '../i18n';
 
-export default function Header({ onGoHome, onOpenDirectory }) {
+export default function Header({ onGoHome, onOpenDirectory, onOpenProfile, session, userProfile, photoUrl }) {
   const { lang: currentLang, setLang, t, tr } = useI18n();
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [fontSize, setFontSize] = useState('normal'); // normal | large | xlarge
@@ -95,24 +95,50 @@ export default function Header({ onGoHome, onOpenDirectory }) {
             </div>
           </button>
 
-          {/* Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-6 font-bold text-sm text-slate-800">
-            <button onClick={onGoHome} className="text-gov-navy hover:text-gov-saffron transition-colors border-b-2 border-gov-navy py-1">
-              {tr('Home', 'होम')}
-            </button>
-            <button onClick={onOpenDirectory} className="hover:text-gov-saffron transition-colors py-1">
-              {tr('Schemes Directory', 'योजनाओं की सूची')}
-            </button>
-            <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {tr('Help Center', 'सहायता केंद्र')}
-            </button>
-            <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {tr('Important Links', 'महत्वपूर्ण लिंक')}
-            </button>
-            <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-              {tr('Contact Us', 'हमसे संपर्क करें')}
-            </button>
-          </nav>
+          {/* Right: nav links + profile avatar */}
+          <div className="flex items-center gap-5">
+            <nav className="hidden md:flex items-center gap-6 font-bold text-sm text-slate-800">
+              <button onClick={onGoHome} className="text-gov-navy hover:text-gov-saffron transition-colors border-b-2 border-gov-navy py-1">
+                {tr('Home', 'होम')}
+              </button>
+              <button onClick={onOpenDirectory} className="hover:text-gov-saffron transition-colors py-1">
+                {tr('Schemes Directory', 'योजनाओं की सूची')}
+              </button>
+              <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
+                {tr('Help Center', 'सहायता केंद्र')}
+              </button>
+              <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
+                {tr('Contact Us', 'हमसे संपर्क करें')}
+              </button>
+            </nav>
+
+            {onOpenProfile && (session ? (
+              <button
+                onClick={onOpenProfile}
+                className="w-11 h-11 rounded-full ring-2 ring-gov-navy/15 hover:ring-gov-navy/40 overflow-hidden bg-gov-navy text-white flex items-center justify-center shrink-0 transition-all"
+                aria-label={tr('Open profile', 'प्रोफ़ाइल खोलें')}
+                title={userProfile?.full_name || tr('Profile', 'प्रोफ़ाइल')}
+              >
+                {photoUrl ? (
+                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : userProfile?.full_name ? (
+                  <span className="text-sm font-extrabold">
+                    {userProfile.full_name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
+                  </span>
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={onOpenProfile}
+                className="flex items-center gap-2 bg-gov-navy hover:bg-gov-navy/90 text-white font-extrabold text-sm px-4 py-2.5 rounded-lg shrink-0 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                {tr('Sign In', 'लॉगिन करें')}
+              </button>
+            ))}
+          </div>
 
         </div>
 

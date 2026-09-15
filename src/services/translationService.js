@@ -10,8 +10,15 @@
  */
 
 const STORAGE_KEY = 'schemesetu_i18n_cache_v1';
+// Short UI strings batch fine at 40/request, but long scraped content (scheme
+// descriptions can run 300-500+ chars each) makes the model's JSON output big
+// enough that generation can exceed a 20s timeout at that batch size — so a
+// smaller batch is used whenever the queued texts are long (see chunkForFlush).
 const BATCH_SIZE = 40;
+const LONG_TEXT_BATCH_SIZE = 8;
+const LONG_TEXT_THRESHOLD = 120; // chars
 const FLUSH_DELAY = 60; // ms – coalesce a render's worth of requests
+const FETCH_TIMEOUT_MS = 45000;
 
 // cache shape: { [lang]: { [ `${sourceLang}::${text}` ]: translatedText } }
 let cache = loadCache();
@@ -111,8 +118,10 @@ async function flush() {
 
     for (const sourceLang of Object.keys(bySource)) {
       const list = bySource[sourceLang];
-      for (let i = 0; i < list.length; i += BATCH_SIZE) {
-        const chunk = list.slice(i, i + BATCH_SIZE);
+      const isLong = list.some((item) => item.text.length > LONG_TEXT_THRESHOLD);
+      const size = isLong ? LONG_TEXT_BATCH_SIZE : BATCH_SIZE;
+      for (let i = 0; i < list.length; i += size) {
+        const chunk = list.slice(i, i + size);
         // Fire batches without blocking one another.
         translateChunk(chunk, lang, sourceLang);
       }
@@ -127,7 +136,7 @@ async function translateChunk(chunk, targetLang, sourceLang) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts, targetLang, sourceLang }),
-      signal: AbortSignal.timeout(20000)
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
     });
     if (!res.ok) throw new Error(`translate ${res.status}`);
     const data = await res.json();
