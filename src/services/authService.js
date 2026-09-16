@@ -144,6 +144,13 @@ export function forgotCheck(mobile) {
   return postJson('/api/auth/forgot-check', { mobile });
 }
 
+// Checked at the START of registration (before sending the OTP) so a
+// returning user is told immediately, not after filling in every field.
+// Throws with code 'MOBILE_REGISTERED' if this number already has an account.
+export function registerCheck(mobile) {
+  return postJson('/api/auth/register-check', { mobile });
+}
+
 // Verifies the OTP token + mobile match on the backend, sets the new password,
 // then signs the user in with the returned email.
 export async function resetPassword({ mobile, verificationToken, newPassword }) {

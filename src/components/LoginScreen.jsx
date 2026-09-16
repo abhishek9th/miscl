@@ -5,7 +5,7 @@ import {
   ChevronDown, Languages, Check, MapPin,
 } from 'lucide-react';
 import { INDIAN_STATES } from '../services/locationService';
-import { login, sendOtp, verifyOtp, retryOtp, register, forgotCheck, resetPassword } from '../services/authService';
+import { login, sendOtp, verifyOtp, retryOtp, register, forgotCheck, registerCheck, resetPassword } from '../services/authService';
 import { warmupOtpWidget, loadOtpWidget, isOtpWidgetConfigured } from '../services/msg91Widget';
 import { LANGUAGES } from '../data/translations';
 import { useI18n } from '../i18n';
@@ -547,6 +547,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
   const [step, setStep] = useState('mobile'); // mobile | otp | details | photo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState('');
 
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -582,14 +583,30 @@ function RegisterView({ onAuthed, onBackToLogin }) {
   const go = (fn) => async (e) => {
     e?.preventDefault();
     setError('');
+    setErrorCode('');
     setLoading(true);
     try { await fn(); }
-    catch (err) { setError(err.message || tr('Something went wrong. Please try again.', 'कुछ गड़बड़ हुई। कृपया पुनः प्रयास करें।')); }
+    catch (err) {
+      setError(err.message || tr('Something went wrong. Please try again.', 'कुछ गड़बड़ हुई। कृपया पुनः प्रयास करें।'));
+      setErrorCode(err.code || '');
+    }
     finally { setLoading(false); }
   };
 
   const doSendOtp = go(async () => {
     if (!/^\d{10}$/.test(mobile.trim())) throw new Error(tr('Please enter a valid 10-digit mobile number', 'कृपया एक मान्य 10-अंकीय मोबाइल नंबर दर्ज करें'));
+    // Check FIRST, before sending an OTP or asking for any other detail — a
+    // returning user should find out immediately, not after filling the whole form.
+    try {
+      await registerCheck(mobile.trim());
+    } catch (err) {
+      if (err.code === 'MOBILE_REGISTERED') {
+        const e = new Error(tr('This mobile number is already registered. Please log in instead.', 'यह मोबाइल नंबर पहले से पंजीकृत है। कृपया लॉगिन करें।'));
+        e.code = 'MOBILE_REGISTERED';
+        throw e;
+      }
+      throw err;
+    }
     await sendOtp(mobile.trim());
     setStep('otp');
     setCooldown(30);
@@ -673,6 +690,11 @@ function RegisterView({ onAuthed, onBackToLogin }) {
               </div>
             </div>
             <div id="msg91-captcha" />
+            {errorCode === 'MOBILE_REGISTERED' && (
+              <button type="button" onClick={onBackToLogin} className="w-full text-center text-sm font-bold hover:underline" style={{ color: BLUE }}>
+                {tr('Log in instead →', 'इसके बजाय लॉगिन करें →')}
+              </button>
+            )}
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Sending OTP…', 'ओटीपी भेजा जा रहा है…') : tr('Send OTP', 'ओटीपी भेजें')}</PrimaryBtn>
             <SecureNote />
           </form>
