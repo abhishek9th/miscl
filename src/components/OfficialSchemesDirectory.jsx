@@ -119,11 +119,6 @@ export default function OfficialSchemesDirectory({ onBack, session, onOpenScheme
             <option value="state">{tr('State / UT', 'राज्य / केंद्र शासित प्रदेश')}</option>
           </select>
 
-          <select value={ministry} onChange={(e) => setMinistry(e.target.value)} className="px-3 py-2 border-2 border-slate-300 rounded-lg text-sm font-bold max-w-[220px]">
-            <option value="">{tr('All ministries', 'सभी मंत्रालय')}</option>
-            {filters.ministries.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-
           <select value={state} onChange={(e) => setState(e.target.value)} className="px-3 py-2 border-2 border-slate-300 rounded-lg text-sm font-bold max-w-[180px]">
             <option value="">{tr('All states/UTs', 'सभी राज्य/केंद्र शासित प्रदेश')}</option>
             {filters.states.map((s) => <option key={s} value={s}>{s}</option>)}
