@@ -20,11 +20,22 @@ export async function searchCatalogue({ q = '', level, ministry, state, category
 }
 
 export async function getCatalogueFilters() {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/catalogue/filters`, {
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) throw new Error('Could not load catalogue filters');
-  return res.json();
+  // The backend can be a cold free-tier instance that takes ~50s to wake, so use
+  // a generous timeout and retry once rather than silently leaving the filter
+  // dropdowns empty on the first (cold) load.
+  let lastErr;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/catalogue/filters`, {
+        signal: AbortSignal.timeout(60000),
+      });
+      if (!res.ok) throw new Error('Could not load catalogue filters');
+      return await res.json();
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
 }
 
 // Catalogue schemes the signed-in user is likely eligible for, from
