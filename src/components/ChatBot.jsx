@@ -22,6 +22,14 @@ export default function ChatBot({ onVoiceProfileReady }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Let any part of the app (e.g. footer "Helpdesk"/"FAQ"/"Feedback" links) open
+  // the assistant by dispatching a window event.
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener('ss:open-chat', open);
+    return () => window.removeEventListener('ss:open-chat', open);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);

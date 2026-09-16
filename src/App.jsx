@@ -12,6 +12,7 @@ import OfficialSchemesDirectory from './components/OfficialSchemesDirectory';
 import EligibilityDashboard from './components/EligibilityDashboard';
 import LoginScreen from './components/LoginScreen';
 import ProfilePanel from './components/ProfilePanel';
+import PolicyModal from './components/PolicyModal';
 import ProfileDocumentsSetup from './components/ProfileDocumentsSetup';
 import { getSession, onAuthChange, getProfile, signOut } from './services/authService';
 import { getSignedUrl, registerScheme } from './services/profileService';
@@ -111,6 +112,9 @@ export default function App() {
 
   // App Navigation State
   const [currentScreen, setCurrentScreen] = useState('home'); // home | business_flow | student_flow | results | detail | no_schemes
+  // Footer policy/info modal (privacy | terms | disclaimer | accessibility | null).
+  const [policyType, setPolicyType] = useState(null);
+  const openChat = () => window.dispatchEvent(new CustomEvent('ss:open-chat'));
   // Prompt for location/state once per browser session. The login page may have
   // already handled it (it sets this flag), so we don't ask again after sign-in.
   const [showLocationModal, setShowLocationModal] = useState(() => {
@@ -291,7 +295,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="official-portal flex-1 pb-12">
+      <main id="main-content" className="official-portal flex-1 pb-12">
         {currentScreen === 'home' && (
           <HomeScreen
             userState={userState}
@@ -425,9 +429,9 @@ export default function App() {
             </h4>
             <ul className="space-y-1.5 text-xs font-semibold text-slate-400">
               <li><button onClick={handleBrowseAllSchemes} className="hover:text-white transition-colors">{tr('Schemes Directory', 'योजनाओं की सूची')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Official Portals', 'आधिकारिक पोर्टल')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Frequently Asked Questions', 'अक्सर पूछे जाने वाले प्रश्न')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Helpdesk', 'सहायता केंद्र')}</button></li>
+              <li><a href="https://www.myscheme.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{tr('Official Portals', 'आधिकारिक पोर्टल')}</a></li>
+              <li><button onClick={openChat} className="hover:text-white transition-colors">{tr('Frequently Asked Questions', 'अक्सर पूछे जाने वाले प्रश्न')}</button></li>
+              <li><button onClick={openChat} className="hover:text-white transition-colors">{tr('Helpdesk', 'सहायता केंद्र')}</button></li>
             </ul>
           </div>
 
@@ -437,10 +441,10 @@ export default function App() {
               {tr('Policies', 'नीतियां')}
             </h4>
             <ul className="space-y-1.5 text-xs font-semibold text-slate-400">
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Privacy Policy', 'गोपनीयता नीति')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Terms of Use', 'उपयोग की शर्तें')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Disclaimer', 'अस्वीकरण')}</button></li>
-              <li><button onClick={handleRestart} className="hover:text-white transition-colors">{tr('Sitemap', 'साइट मैप')}</button></li>
+              <li><button onClick={() => setPolicyType('privacy')} className="hover:text-white transition-colors">{tr('Privacy Policy', 'गोपनीयता नीति')}</button></li>
+              <li><button onClick={() => setPolicyType('terms')} className="hover:text-white transition-colors">{tr('Terms of Use', 'उपयोग की शर्तें')}</button></li>
+              <li><button onClick={() => setPolicyType('disclaimer')} className="hover:text-white transition-colors">{tr('Disclaimer', 'अस्वीकरण')}</button></li>
+              <li><button onClick={handleBrowseAllSchemes} className="hover:text-white transition-colors">{tr('Sitemap', 'साइट मैप')}</button></li>
             </ul>
           </div>
 
@@ -453,9 +457,9 @@ export default function App() {
               © 2024 SchemeSetu India. {tr('Government of India. All rights reserved.', 'भारत सरकार. सभी अधिकार सुरक्षित।')}
             </div>
             <div className="flex items-center gap-3 font-semibold">
-              <button onClick={handleRestart} className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>
+              <button onClick={() => setPolicyType('accessibility')} className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>
               <span>|</span>
-              <button onClick={handleRestart} className="hover:text-white">{tr('Feedback', 'प्रतिक्रिया दें')}</button>
+              <button onClick={openChat} className="hover:text-white">{tr('Feedback', 'प्रतिक्रिया दें')}</button>
               <span>|</span>
               <span>{tr('Last Updated: August 2024', 'अंतिम अपडेट: अगस्त 2024')}</span>
             </div>
@@ -463,6 +467,8 @@ export default function App() {
         </div>
 
       </footer>
+
+      {policyType && <PolicyModal type={policyType} onClose={() => setPolicyType(null)} />}
     </div>
   );
 }

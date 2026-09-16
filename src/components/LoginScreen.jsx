@@ -11,6 +11,7 @@ import { LANGUAGES } from '../data/translations';
 import { useI18n } from '../i18n';
 import FaceCapture from './FaceCapture';
 import LocationModal from './LocationModal';
+import PolicyModal from './PolicyModal';
 import { isValidPincode, isValidPastDate, ageFromDob } from '../utils/validators';
 
 /* ---- Blue theme tokens ---- */
@@ -158,7 +159,7 @@ function TopNav({ onOpenLang, onBackToHome }) {
           )}
           <div className="hidden md:flex items-center gap-6 text-[15px] font-semibold" style={{ color: NAVY }}>
             {links.map((l) => (
-              <button key={l} className="hover:text-[#1d4ed8] transition-colors">{l}</button>
+              <button key={l} onClick={onBackToHome} className="hover:text-[#1d4ed8] transition-colors">{l}</button>
             ))}
           </div>
           <button onClick={onOpenLang} className="flex items-center gap-1.5 text-[15px] font-semibold hover:text-[#1d4ed8]" style={{ color: NAVY }}>
@@ -171,7 +172,7 @@ function TopNav({ onOpenLang, onBackToHome }) {
 }
 
 /* ---------------- FOOTER BAR ---------------- */
-function FooterBar() {
+function FooterBar({ onPolicy }) {
   const { tr } = useI18n();
   return (
     <footer className="w-full text-white" style={{ backgroundColor: '#103a7e' }}>
@@ -183,9 +184,9 @@ function FooterBar() {
           </div>
           <span className="hidden sm:block h-8 w-px bg-white/25" />
           <div className="hidden sm:flex items-center gap-4 text-[13px] text-blue-100/90 font-medium">
-            <button className="hover:text-white">{tr('Privacy Policy', 'गोपनीयता नीति')}</button>
-            <button className="hover:text-white">{tr('Terms of Use', 'उपयोग की शर्तें')}</button>
-            <button className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>
+            <button onClick={() => onPolicy('privacy')} className="hover:text-white">{tr('Privacy Policy', 'गोपनीयता नीति')}</button>
+            <button onClick={() => onPolicy('terms')} className="hover:text-white">{tr('Terms of Use', 'उपयोग की शर्तें')}</button>
+            <button onClick={() => onPolicy('accessibility')} className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-4">
@@ -256,6 +257,7 @@ export default function LoginScreen({ onAuthed, onBackToHome }) {
   const { setLang } = useI18n();
   const [view, setView] = useState('login'); // login | register | forgot
   const [showLang, setShowLang] = useState(false);
+  const [policyType, setPolicyType] = useState(null);
 
   // Ask for location/state on the login page itself (once per browser session).
   const [showLocation, setShowLocation] = useState(() => {
@@ -296,9 +298,10 @@ export default function LoginScreen({ onAuthed, onBackToHome }) {
           </div>
         </div>
       </div>
-      <FooterBar />
+      <FooterBar onPolicy={setPolicyType} />
 
       {showLang && <LanguageModal onClose={() => setShowLang(false)} />}
+      {policyType && <PolicyModal type={policyType} onClose={() => setPolicyType(null)} />}
       {showLocation && (
         <LocationModal onLocationGranted={handleLocationGranted} onLocationDenied={handleLocationDenied} />
       )}

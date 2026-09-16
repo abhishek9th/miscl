@@ -40,11 +40,13 @@ export default function Header({ onGoHome, onOpenDirectory, onOpenProfile, sessi
 
             {/* Accessibility and language controls */}
             <div className="flex items-center gap-3 text-xs font-semibold text-gov-navy">
-              <button className="hidden xl:block hover:text-gov-saffron transition-colors">
+              <button onClick={() => document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' })}
+                className="hidden xl:block hover:text-gov-saffron transition-colors">
                 {tr('Skip to main content', 'मुख्य सामग्री पर जाएं')}
               </button>
               <span className="hidden xl:inline text-slate-400">|</span>
-              <button className="hover:text-gov-saffron transition-colors flex items-center gap-1">
+              <button onClick={() => document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' })}
+                className="hover:text-gov-saffron transition-colors flex items-center gap-1">
                 <Accessibility className="w-3 h-3" />
                 <span>{tr('Screen Reader Access', 'स्क्रीन रीडर के लिए')}</span>
               </button>
