@@ -81,7 +81,7 @@ function PrimaryBtn({ loading, children, withArrow, ...props }) {
       style={{ backgroundColor: BLUE }}
       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = BLUE_HOVER)}
       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = BLUE)}
-      className="w-full h-[54px] rounded-lg disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-[16px] shadow-sm transition-colors active:scale-[0.99] flex items-center justify-center gap-2"
+      className="w-4/5 mx-auto h-[54px] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-[16px] shadow-sm transition-colors active:scale-[0.99] flex items-center justify-center gap-2"
     >
       {loading && <Loader2 className="w-5 h-5 animate-spin" />}
       {children}

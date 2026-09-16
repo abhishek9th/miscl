@@ -3,8 +3,26 @@ import { ArrowRight, RotateCcw, Volume2, VolumeX, Search, Sparkles, ExternalLink
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
-import { suggestAdditionalSchemes } from '../services/aiService';
+import { getEligibleCatalogueSchemes } from '../services/catalogueService';
 import SchemeStatusStrip from './SchemeStatusStrip';
+
+// Map the discovery-flow intent to the benefit types the matcher filters on, so
+// an "education loan" search surfaces loan schemes from the full catalogue, a
+// "scholarship" search surfaces scholarships, etc.
+function deriveBenefitTypes(c = {}) {
+  if (c.student_type) {
+    const m = {
+      scholarship: ['scholarship', 'stipend', 'fellowship'],
+      education_loan: ['loan'],
+      coaching_support: ['training', 'scholarship'],
+      hostel_support: ['housing', 'subsidy', 'scholarship'],
+      overseas: ['scholarship', 'loan', 'fellowship'],
+    };
+    return m[c.student_type] || ['scholarship', 'loan'];
+  }
+  if (c.field || c.business_status || c.financial_need) return ['loan', 'subsidy', 'grant', 'equipment'];
+  return ['training', 'stipend']; // skills & employment
+}
 
 export default function ResultsScreen({
   schemes,
@@ -16,19 +34,20 @@ export default function ResultsScreen({
   const [speaking, setSpeaking] = useState(false);
   const isHindi = currentLang !== 'en';
 
-  // Beyond SchemeSetu's own small verified catalogue, ask Groq to name other
-  // REAL government schemes worth checking for this profile — clearly
-  // separated below and never merged with the verified results, since these
-  // are unverified suggestions the user must confirm on the official portal.
-  const [aiSuggestions, setAiSuggestions] = useState(null); // null = loading, [] = none found
+  // Beyond SchemeSetu's own ~20 verified schemes, match the signed-in user's
+  // profile against the FULL myScheme catalogue (4,600+ schemes) using the
+  // AI-extracted eligibility criteria. Clearly separated below and never merged
+  // with the verified count — these are AI-assisted and must be confirmed on the
+  // official portal.
+  const [eligibleExtra, setEligibleExtra] = useState(null); // null = loading, [] = none
   useEffect(() => {
     let active = true;
-    setAiSuggestions(null);
-    suggestAdditionalSchemes(userCriteria, schemes.map((s) => s.name), currentLang)
-      .then((list) => { if (active) setAiSuggestions(list); });
+    setEligibleExtra(null);
+    getEligibleCatalogueSchemes(deriveBenefitTypes(userCriteria), 12)
+      .then((list) => { if (active) setEligibleExtra(list); });
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schemes, currentLang]);
+  }, [userCriteria]);
   const readResults = () => {
     if (speaking) { stopTextAloud(); setSpeaking(false); return; }
     const top = schemes[0];
@@ -134,47 +153,49 @@ export default function ResultsScreen({
         })}
       </div>
 
-      {/* AI-suggested schemes — beyond SchemeSetu's own verified catalogue.
-          Deliberately separate and differently styled: these are NOT
-          verified entries, just real scheme names Groq recognises as
-          potentially relevant, which the user must confirm on the official
-          portal. Never merged into the "matching schemes" count above. */}
-      {(aiSuggestions === null || aiSuggestions.length > 0) && (
+      {/* Full-catalogue matches — the signed-in user's profile checked against
+          every myScheme scheme via AI-extracted eligibility. Deliberately
+          separate and differently styled: AI-assisted, NOT hand-verified, and
+          never merged into the "matching schemes" count above. */}
+      {(eligibleExtra === null || eligibleExtra.length > 0) && (
         <div className="border-t-2 border-dashed border-slate-300 pt-6 space-y-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-slate-400" />
             <h3 className="text-lg font-extrabold text-slate-700">
-              {tr('Other schemes worth checking', 'जाँचने योग्य अन्य योजनाएँ')}
+              {tr('More schemes you may be eligible for', 'और योजनाएँ जिनके लिए आप पात्र हो सकते हैं')}
             </h3>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
             {tr(
-              'These are additional government schemes SchemeSetu is aware of but has not yet verified in detail. Confirm eligibility and details on the official portal.',
-              'ये अतिरिक्त सरकारी योजनाएँ हैं जिनके बारे में SchemeSetu को जानकारी है परंतु अभी तक विस्तार से सत्यापित नहीं किया गया है। कृपया पात्रता व विवरण आधिकारिक पोर्टल पर सत्यापित करें।'
+              'Matched against the full Government of India myScheme catalogue (4,600+ schemes) using AI-assisted eligibility. Confirm details and apply on the official portal.',
+              'भारत सरकार के पूरे myScheme कैटलॉग (4,600+ योजनाएँ) से AI-सहायता प्राप्त पात्रता के आधार पर मिलान। विवरण की पुष्टि कर आधिकारिक पोर्टल पर आवेदन करें।'
             )}
           </p>
 
-          {aiSuggestions === null && (
-            <p className="text-sm text-slate-400 italic">{tr('Checking for more schemes…', 'अधिक योजनाओं की जाँच की जा रही है…')}</p>
+          {eligibleExtra === null && (
+            <p className="text-sm text-slate-400 italic">{tr('Checking the full catalogue…', 'पूरा कैटलॉग जाँचा जा रहा है…')}</p>
           )}
 
-          {Array.isArray(aiSuggestions) && aiSuggestions.map((s, i) => (
-            <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-start justify-between gap-3">
-              <div>
-                <div className="font-bold text-slate-800">{s.name}</div>
-                <div className="text-sm text-slate-600 mt-0.5">{s.reason}</div>
-                {s.category && s.category !== 'unknown' && (
-                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase text-slate-500 bg-slate-200 rounded px-1.5 py-0.5">
-                    {s.category === 'central' ? tr('Central Scheme', 'केंद्रीय योजना') : tr('State Scheme', 'राज्य योजना')}
+          {Array.isArray(eligibleExtra) && eligibleExtra.map((s) => (
+            <div key={s.slug} className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="font-bold text-slate-800">{trText(s.name, 'en')}</div>
+                {s.short_description && <div className="text-sm text-slate-600 mt-0.5 line-clamp-2">{trText(s.short_description, 'en')}</div>}
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  <span className="text-[10px] font-bold uppercase text-slate-500 bg-slate-200 rounded px-1.5 py-0.5">
+                    {s.level === 'state' ? tr('State Scheme', 'राज्य योजना') : tr('Central Scheme', 'केंद्रीय योजना')}
                   </span>
-                )}
+                  {(s.benefit_types || []).slice(0, 3).map((b) => (
+                    <span key={b} className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-100 rounded px-1.5 py-0.5">{b}</span>
+                  ))}
+                </div>
               </div>
               <a
-                href={`https://www.myscheme.gov.in/search/scheme?q=${encodeURIComponent(s.name)}`}
+                href={s.source_url || `https://www.myscheme.gov.in/schemes/${s.slug}`}
                 target="_blank" rel="noopener noreferrer"
                 className="shrink-0 flex items-center gap-1.5 text-sm font-bold text-gov-navy hover:underline whitespace-nowrap"
               >
-                <Search className="w-4 h-4" /> {tr('Search', 'खोजें')} <ExternalLink className="w-3.5 h-3.5" />
+                <Search className="w-4 h-4" /> {tr('View', 'देखें')} <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           ))}
