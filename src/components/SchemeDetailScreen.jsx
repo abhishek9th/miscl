@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench, Wand2, ClipboardList } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, Loader2, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench, ClipboardList, ChevronsLeft, ChevronsRight, GripHorizontal } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
-import { getBankNavigationUrl, getGeneralBankNavigationUrl, getSchemeProviders } from '../services/bankService';
+import { getBankNavigationUrl, getGeneralBankNavigationUrl, getBankDirectionsUrl, getSchemeProviders } from '../services/bankService';
 import ApplicationJourney from './ApplicationJourney';
 import ApplicationReadiness from './ApplicationReadiness';
 import SchemeConflictNotice from './SchemeConflictNotice';
@@ -49,11 +49,92 @@ function describeEligibility(scheme, criteria, tr, trText) {
   return items;
 }
 
+// Draggable swipe control: drag the knob LEFT to open the official website,
+// RIGHT to start the guided SchemeSetu auto-fill. Works with touch and mouse
+// via pointer events. Snaps back to centre if released before the threshold.
+function SwipeToAct({ tr, canLeft, onLeft, onRight, leftLabel, rightLabel }) {
+  const trackRef = useRef(null);
+  const drag = useRef({ active: false, startX: 0, max: 120 });
+  const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const onDown = (e) => {
+    const w = trackRef.current?.getBoundingClientRect().width || 300;
+    drag.current = { active: true, startX: e.clientX, max: Math.max(70, w / 2 - 40) };
+    setDragging(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onMove = (e) => {
+    if (!drag.current.active) return;
+    const { startX, max } = drag.current;
+    setDx(Math.max(-max, Math.min(max, e.clientX - startX)));
+  };
+  const onUp = () => {
+    if (!drag.current.active) return;
+    drag.current.active = false;
+    setDragging(false);
+    const threshold = drag.current.max * 0.6;
+    setDx((cur) => {
+      if (cur <= -threshold && canLeft) onLeft();
+      else if (cur >= threshold) onRight();
+      return 0;
+    });
+  };
+
+  return (
+    <div>
+      <div
+        ref={trackRef}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        className="relative h-16 rounded-full border-2 border-slate-200 bg-gradient-to-r from-blue-50 via-slate-50 to-amber-50 overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing"
+      >
+        <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none font-extrabold text-sm sm:text-base">
+          <span className={`flex items-center gap-1.5 ${canLeft ? 'text-[#0b4f91]' : 'text-slate-300'}`}><ChevronsLeft className="w-5 h-5" /><ExternalLink className="w-4 h-4" />{leftLabel}</span>
+          <span className="flex items-center gap-1.5 text-orange-700">{rightLabel}<ChevronsRight className="w-5 h-5" /></span>
+        </div>
+        <div
+          className={`absolute top-1/2 left-1/2 -mt-6 -ml-6 w-12 h-12 rounded-full bg-gov-navy text-white flex items-center justify-center shadow-lg ${dragging ? '' : 'transition-transform duration-200'}`}
+          style={{ transform: `translateX(${dx}px)` }}
+        >
+          <GripHorizontal className="w-6 h-6" />
+        </div>
+      </div>
+      <p className="mt-2 text-center text-[11px] text-slate-500">{tr('← Slide to the official website  •  Slide to auto-fill with SchemeSetu →', '← आधिकारिक वेबसाइट के लिए बाएँ  •  SchemeSetu से स्वतः भरने के लिए दाएँ →')}</p>
+    </div>
+  );
+}
+
 export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLocation = {}, onBack, onRegisterScheme }) {
   const { tr, trText, trList, lang: currentLang } = useI18n();
   const [speaking, setSpeaking] = useState(false);
   const [regState, setRegState] = useState('idle'); // idle | saving | done | error
   const [showJourney, setShowJourney] = useState(false);
+  const [locatingBank, setLocatingBank] = useState(null); // shortName being located
+
+  // Open Google Maps directions to the nearest branch of the clicked bank, using
+  // the user's live location as the route origin. A blank tab is opened up-front
+  // (inside the click gesture) so the later navigation isn't blocked as a popup.
+  const openBankDirections = (bank) => {
+    const win = window.open('about:blank', '_blank', 'noopener,noreferrer');
+    const go = (loc) => {
+      const url = getBankDirectionsUrl(bank, loc);
+      if (win) win.location.href = url;
+      else window.open(url, '_blank', 'noopener,noreferrer');
+    };
+    if (navigator.geolocation) {
+      setLocatingBank(bank.shortName);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { setLocatingBank(null); go({ lat: pos.coords.latitude, lon: pos.coords.longitude, state: userLocation.state }); },
+        () => { setLocatingBank(null); go(userLocation); }, // denied/unavailable → stored location
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    } else {
+      go(userLocation);
+    }
+  };
 
   const handleRegister = async () => {
     if (!onRegisterScheme || regState === 'saving' || regState === 'done') return;
@@ -134,13 +215,24 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
     <section className="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-5 sm:p-6">
       <h2 className="text-xl sm:text-2xl font-black text-gov-navy flex items-center gap-3"><Building2 className="w-7 h-7 text-gov-saffron" />{tr('Where can you get this scheme?', 'कहाँ से योजना मिलेगी?')}</h2>
       <p className="mt-3 text-base text-slate-700 font-semibold leading-relaxed">{tr(`Apply through ${providers.type}.`, `इस योजना के लिए ${providers.type_hi} में आवेदन करें।`)}</p>
-      {providers.banks?.length > 0 && <div className="mt-4 flex flex-wrap gap-3">{providers.banks.map((bank) => (
-        <span key={bank.shortName} title={bank.name} className="bg-white border border-slate-300 rounded-md px-3 py-2 h-14 flex items-center justify-center min-w-[90px]">
-          {bank.logo
-            ? <img src={bank.logo} alt={bank.name} className="h-8 max-w-[110px] object-contain" onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement('span'), { textContent: bank.shortName, className: 'text-sm font-bold text-slate-800' })); }} />
-            : <span className="text-sm font-bold text-slate-800">{bank.shortName}</span>}
-        </span>
-      ))}</div>}
+      {providers.banks?.length > 0 && <>
+        <p className="mt-3 text-sm text-gov-navy font-semibold flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gov-saffron" />{tr('Tap a bank to get directions to your nearest branch.', 'निकटतम शाखा तक दिशा-निर्देश पाने के लिए किसी बैंक पर टैप करें।')}</p>
+        <div className="mt-3 flex flex-wrap gap-3">{providers.banks.map((bank) => (
+        <button
+          key={bank.shortName}
+          type="button"
+          onClick={() => openBankDirections(bank)}
+          disabled={locatingBank === bank.shortName}
+          title={tr(`Directions to the nearest ${bank.name}`, `निकटतम ${bank.name} तक दिशा-निर्देश`)}
+          aria-label={tr(`Directions to the nearest ${bank.name}`, `निकटतम ${bank.name} तक दिशा-निर्देश`)}
+          className="relative bg-white border border-slate-300 rounded-md px-3 py-2 h-14 flex items-center justify-center min-w-[90px] transition-all hover:border-gov-navy hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gov-saffron cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+          {locatingBank === bank.shortName
+            ? <Loader2 className="w-5 h-5 animate-spin text-gov-navy" />
+            : bank.logo
+              ? <img src={bank.logo} alt={bank.name} className="h-8 max-w-[110px] object-contain pointer-events-none" onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement('span'), { textContent: bank.shortName, className: 'text-sm font-bold text-slate-800' })); }} />
+              : <span className="text-sm font-bold text-slate-800">{bank.shortName}</span>}
+        </button>
+      ))}</div></>}
       <p className="mt-3 text-xs text-slate-500">{tr('Confirm scheme eligibility and availability with the branch before visiting.', 'शाखा में जाने से पहले पात्रता और उपलब्धता की पुष्टि करें।')}</p>
     </section>
 
@@ -170,7 +262,6 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
 
     <section className="mt-5 bg-[#f5f8ff] border border-blue-200 rounded-lg p-5 no-print">
       <button onClick={() => setShowJourney(true)} className="flex items-start gap-3 w-full text-left group">
-        <div className="shrink-0 w-11 h-11 rounded-full bg-gov-navy text-white flex items-center justify-center group-hover:bg-[#083d71] transition-colors"><Wand2 className="w-6 h-6" /></div>
         <div className="flex-1">
           <h2 className="text-lg sm:text-xl font-black text-gov-navy group-hover:underline">{tr('Apply with SchemeSetu (guided)', 'SchemeSetu के साथ आवेदन करें (निर्देशित)')}</h2>
           <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSetu auto-fills what it already knows, asks only for what is missing, and pauses for OTP and your approval. You stay in control of every security step.', 'SchemeSetu वह जानकारी अपने आप भरता है जो उसे पहले से पता है, केवल छूटी हुई जानकारी पूछता है, और ओटीपी व आपकी स्वीकृति के लिए रुकता है। हर सुरक्षा चरण आपके नियंत्रण में रहता है।')}</p>
@@ -181,21 +272,25 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
 
     {showJourney && <ApplicationJourney scheme={scheme} onClose={() => setShowJourney(false)} />}
 
-    <section className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
-      {scheme.official_link ? <a href={scheme.official_link} target="_blank" rel="noopener noreferrer" className="bg-[#0b4f91] hover:bg-[#083d71] text-white rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2">{tr('Visit official website', 'आधिकारिक वेबसाइट पर जाएँ')} <ExternalLink className="w-5 h-5" /></a> : <button disabled className="bg-slate-200 text-slate-500 rounded-md py-4 px-5 font-bold">{tr('Official application link unavailable', 'आधिकारिक आवेदन लिंक उपलब्ध नहीं है')}</button>}
-      {onRegisterScheme ? (
-        <button onClick={handleRegister} disabled={regState === 'saving' || regState === 'done'}
-          className={`rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2 ${regState === 'done' ? 'bg-emerald-600 text-white' : 'bg-gov-saffron hover:bg-orange-700 text-white'} disabled:opacity-90`}>
-          <CheckCircle2 className="w-5 h-5" />
-          {regState === 'done'
-            ? tr('Registered ✓', 'पंजीकृत ✓')
-            : regState === 'saving'
-              ? tr('Saving…', 'सहेजा जा रहा है…')
-              : tr('Register for this scheme', 'इस योजना के लिए पंजीकरण करें')}
-        </button>
-      ) : (
-        <button onClick={() => window.print()} className="border-2 border-slate-300 hover:border-gov-navy text-gov-navy rounded-md py-4 px-5 font-extrabold text-lg flex items-center justify-center gap-2"><FileText className="w-5 h-5" />{tr('Scheme details', 'योजना की विस्तृत जानकारी')}</button>
-      )}
+    <section className="mt-4 no-print">
+      <SwipeToAct
+        tr={tr}
+        canLeft={!!scheme.official_link}
+        onLeft={() => { if (scheme.official_link) window.open(scheme.official_link, '_blank', 'noopener,noreferrer'); }}
+        onRight={() => setShowJourney(true)}
+        leftLabel={tr('Website', 'वेबसाइट')}
+        rightLabel={tr('Auto-fill', 'स्वतः भरें')}
+      />
+      <div className="mt-3 flex items-center justify-center gap-4 text-sm">
+        {onRegisterScheme && (
+          <button onClick={handleRegister} disabled={regState === 'saving' || regState === 'done'}
+            className={`font-bold inline-flex items-center gap-1.5 ${regState === 'done' ? 'text-emerald-700' : 'text-gov-saffron hover:underline'} disabled:opacity-70`}>
+            <CheckCircle2 className="w-4 h-4" />
+            {regState === 'done' ? tr('Registered ✓', 'पंजीकृत ✓') : regState === 'saving' ? tr('Saving…', 'सहेजा जा रहा है…') : tr('Register for this scheme', 'इस योजना के लिए पंजीकरण करें')}
+          </button>
+        )}
+        <button onClick={() => window.print()} className="text-gov-navy font-bold inline-flex items-center gap-1.5 hover:underline"><FileText className="w-4 h-4" />{tr('Print details', 'विवरण प्रिंट करें')}</button>
+      </div>
     </section>
     {regState === 'error' && <p className="mt-2 text-sm text-red-600 no-print">{tr('Could not save. Please try again.', 'सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।')}</p>}
 

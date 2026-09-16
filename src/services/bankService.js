@@ -62,6 +62,22 @@ export function getBankNavigationUrl(provider, location = {}) {
   return `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query }).toString()}`;
 }
 
+// Directions (not just search) to the nearest branch of a specific bank. When we
+// have the user's live coordinates we set them as the route origin and let Google
+// Maps resolve the destination to the closest matching branch; without coords we
+// fall back to a state-scoped destination so it still opens somewhere sensible.
+export function getBankDirectionsUrl(provider, location = {}) {
+  const name = provider.searchName || provider.name;
+  const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
+  if (location.lat && location.lon) {
+    params.set('origin', `${location.lat},${location.lon}`);
+    params.set('destination', `${name} near ${location.lat},${location.lon}`);
+  } else {
+    params.set('destination', `${name}, ${location.state || 'India'}`);
+  }
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
 export function getGeneralBankNavigationUrl(location = {}) {
   const query = location.lat && location.lon
     ? `government bank near ${location.lat},${location.lon}`
