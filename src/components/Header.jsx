@@ -104,12 +104,6 @@ export default function Header({ onGoHome, onOpenDirectory, onOpenProfile, sessi
               <button onClick={onOpenDirectory} className="hover:text-gov-saffron transition-colors py-1">
                 {tr('Schemes Directory', 'योजनाओं की सूची')}
               </button>
-              <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-                {tr('Help Center', 'सहायता केंद्र')}
-              </button>
-              <button onClick={onGoHome} className="hover:text-gov-saffron transition-colors py-1">
-                {tr('Contact Us', 'हमसे संपर्क करें')}
-              </button>
             </nav>
 
             {onOpenProfile && (session ? (
