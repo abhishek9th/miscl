@@ -26,17 +26,36 @@ export default function FaceCapture({ onCapture }) {
 
   const startCamera = async () => {
     setError('');
+    if (!window.isSecureContext) {
+      // getUserMedia only works on HTTPS (or localhost). An in-app/embedded
+      // browser opened over http will always fail here.
+      setError('Camera needs a secure (https) connection. Open this page directly in Chrome or Safari and try again.');
+      setStatus('error');
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError('Camera is not supported in this browser.');
+      setError('Camera is not supported in this browser. Try Chrome or Safari.');
       setStatus('error');
       return;
     }
     setStatus('starting');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
-        audio: false,
-      });
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+          audio: false,
+        });
+      } catch (err) {
+        // Some devices/browsers reject the sized/facingMode constraints
+        // (OverconstrainedError, or a fussy front camera). Retry once with the
+        // simplest possible request before giving up.
+        if (err?.name === 'OverconstrainedError' || err?.name === 'ConstraintNotSatisfiedError' || err?.name === 'NotReadableError' || err?.name === 'TypeError') {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        } else {
+          throw err;
+        }
+      }
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -44,12 +63,15 @@ export default function FaceCapture({ onCapture }) {
       }
       setStatus('live');
     } catch (err) {
-      if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') {
-        setError('Camera permission was denied. Please allow camera access and try again.');
-      } else if (err?.name === 'NotFoundError') {
+      const name = err?.name || '';
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        setError('Camera permission is blocked. Tap the camera/lock icon in the address bar, allow the camera for this site, then try again.');
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
         setError('No camera was found on this device.');
+      } else if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') {
+        setError('The camera is being used by another app (or blocked by the system). Close other apps/tabs using the camera and try again.');
       } else {
-        setError('Could not start the camera. Please try again.');
+        setError(`Could not start the camera${name ? ` (${name})` : ''}. Please try again.`);
       }
       setStatus('error');
     }
