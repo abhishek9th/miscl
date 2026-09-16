@@ -5,6 +5,31 @@ import { getCatalogueScheme } from '../services/catalogueService';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import ApplicationReadiness from './ApplicationReadiness';
 
+// Some scraped fields (application_process, documents_required, faqs) were
+// stored double-encoded — e.g. the STRING '["Online\\nStep 1:..."]' instead of a
+// real array — so printed raw they show brackets, quotes and literal "\n". They
+// also sometimes leaked the page footer as trailing junk. This normalises any of
+// those shapes into clean, line-broken text and stops at the first junk marker.
+const JUNK_RE = /^(frequently asked questions|disclaimer|terms\s*&?\s*conditions|dashboard|useful links|get in touch|last updated on|accessibility options|created by|copyright|©)/i;
+function scrapedToText(v) {
+  if (v == null) return '';
+  let val = v;
+  if (typeof val === 'string') {
+    const t = val.trim();
+    if (t.startsWith('[') || t.startsWith('{')) { try { val = JSON.parse(t); } catch { /* keep as-is */ } }
+  }
+  const parts = Array.isArray(val) ? val : [val];
+  const out = [];
+  for (const part of parts) {
+    for (const raw of String(part ?? '').split('\n')) {
+      const line = raw.replace(/﻿/g, '').trim();
+      if (JUNK_RE.test(line)) return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+      out.push(line);
+    }
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 // Full detail view for a scheme from the native myScheme catalogue (not the
 // small curated SCHEMES[] set). Shows exactly what was scraped from the
 // government's own site — no AI-generated eligibility/benefit text here.
@@ -82,15 +107,11 @@ export default function CatalogueSchemeDetail({ slug, onBack }) {
         </p>
       </div>
 
-      <Section icon={FileText} title="About this scheme" hiTitle="योजना के बारे में" text={scheme.details_text} />
-      <Section icon={CheckCircle2} title="Benefits" hiTitle="लाभ" text={scheme.benefits_text} />
-      <Section icon={ListChecks} title="Eligibility" hiTitle="पात्रता" text={scheme.eligibility_text} />
-      <Section icon={ListChecks} title="Application Process" hiTitle="आवेदन प्रक्रिया" text={
-        Array.isArray(scheme.application_process) ? scheme.application_process.join('\n\n') : scheme.application_process
-      } />
-      <Section icon={FileText} title="Documents Required" hiTitle="आवश्यक दस्तावेज़" text={
-        Array.isArray(scheme.documents_required) ? scheme.documents_required.join('\n\n') : scheme.documents_required
-      } />
+      <Section icon={FileText} title="About this scheme" hiTitle="योजना के बारे में" text={scrapedToText(scheme.details_text)} />
+      <Section icon={CheckCircle2} title="Benefits" hiTitle="लाभ" text={scrapedToText(scheme.benefits_text)} />
+      <Section icon={ListChecks} title="Eligibility" hiTitle="पात्रता" text={scrapedToText(scheme.eligibility_text)} />
+      <Section icon={ListChecks} title="Application Process" hiTitle="आवेदन प्रक्रिया" text={scrapedToText(scheme.application_process)} />
+      <Section icon={FileText} title="Documents Required" hiTitle="आवश्यक दस्तावेज़" text={scrapedToText(scheme.documents_required)} />
 
       {/* Personalised readiness — runs the same engine used for curated schemes
           against this scheme's decomposed requirements. Signed-in users only. */}
@@ -104,9 +125,7 @@ export default function CatalogueSchemeDetail({ slug, onBack }) {
         </section>
       )}
 
-      <Section icon={HelpCircle} title="Frequently Asked Questions" hiTitle="अक्सर पूछे जाने वाले प्रश्न" text={
-        Array.isArray(scheme.faqs) ? scheme.faqs.join('\n\n') : scheme.faqs
-      } />
+      <Section icon={HelpCircle} title="Frequently Asked Questions" hiTitle="अक्सर पूछे जाने वाले प्रश्न" text={scrapedToText(scheme.faqs)} />
 
       {scheme.official_website && (
         <a
