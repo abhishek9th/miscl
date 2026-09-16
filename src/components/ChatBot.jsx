@@ -5,13 +5,40 @@ import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { cleanupRecording, startBrowserFallback, startGroqRecording, stopGroqRecording } from '../services/voiceService';
 import { useI18n } from '../i18n';
 
-export default function ChatBot({ onVoiceProfileReady }) {
+// Map the signed-in user's SAVED profile (Supabase `profiles` row, snake_case)
+// into the camelCase shape the chatbot/backend already use for extractedData,
+// so the assistant knows what the app already knows instead of re-asking.
+function seedProfileFrom(userProfile) {
+  if (!userProfile) return {};
+  const seeded = {
+    state: userProfile.state || undefined,
+    annualFamilyIncome: userProfile.annual_income ?? undefined,
+    gender: userProfile.gender || undefined,
+    socialCategory: userProfile.social_category || undefined,
+    educationLevel: userProfile.education_level || undefined,
+  };
+  return Object.fromEntries(Object.entries(seeded).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+}
+
+export default function ChatBot({ onVoiceProfileReady, userProfile }) {
   const { tr, lang: currentLang } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [voiceState, setVoiceState] = useState('idle');
-  const [profile, setProfile] = useState({});
+  // Seeded from the user's saved profile (if signed in) so the assistant
+  // already knows their state/income/category etc. and doesn't re-ask.
+  const [profile, setProfile] = useState(() => seedProfileFrom(userProfile));
+
+  // Re-seed if the saved profile loads/changes after mount (e.g. right after
+  // sign-in) — but never clobber facts the user has already told THIS chat.
+  useEffect(() => {
+    const seeded = seedProfileFrom(userProfile);
+    if (Object.keys(seeded).length) {
+      setProfile((prev) => ({ ...seeded, ...prev }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const fallbackRef = useRef(null);

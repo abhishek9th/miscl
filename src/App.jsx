@@ -388,7 +388,7 @@ export default function App() {
       )}
 
       {/* Persistent help control */}
-      <ChatBot onVoiceProfileReady={handleVoiceProfileReady} />
+      <ChatBot onVoiceProfileReady={handleVoiceProfileReady} userProfile={userProfile} />
 
       {/* Location Permission Modal */}
       {showLocationModal && (
