@@ -42,7 +42,7 @@ export async function getCatalogueFilters() {
 // AI-extracted criteria. `benefitTypes` narrows to what the user is after
 // (e.g. ['loan','subsidy']). Returns [] when signed-out or nothing matches —
 // never throws to the caller, so the results screen degrades gracefully.
-export async function getEligibleCatalogueSchemes(benefitTypes = [], limit = 12) {
+export async function getEligibleCatalogueSchemes(benefitTypes = [], audiences = [], limit = 20) {
   try {
     const { supabase, isSupabaseConfigured } = await import('./supabaseClient');
     if (!isSupabaseConfigured) return [];
@@ -51,6 +51,7 @@ export async function getEligibleCatalogueSchemes(benefitTypes = [], limit = 12)
     if (!token) return [];
     const params = new URLSearchParams({ limit: String(limit) });
     if (benefitTypes.length) params.set('benefit_types', benefitTypes.join(','));
+    if (audiences.length) params.set('audiences', audiences.join(','));
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/catalogue/eligible?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(20000),

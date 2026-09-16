@@ -24,6 +24,28 @@ function deriveBenefitTypes(c = {}) {
   return ['training', 'stipend']; // skills & employment
 }
 
+// Map the flow's chosen field to the audience the scheme targets, so an
+// Agriculture search ranks farmer schemes first, a handicrafts search ranks
+// artisan schemes, a student search ranks student schemes, etc.
+function deriveAudiences(c = {}) {
+  if (c.student_type) return ['student'];
+  const byField = {
+    agriculture_allied: ['farmer'],
+    food_processing: ['farmer', 'entrepreneur', 'msme'],
+    handicrafts: ['artisan', 'entrepreneur'],
+    manufacturing: ['entrepreneur', 'msme', 'startup'],
+    retail_trading: ['entrepreneur', 'msme'],
+    tech_it: ['entrepreneur', 'startup'],
+    services: ['entrepreneur', 'worker'],
+    healthcare: ['entrepreneur'],
+    transport: ['entrepreneur', 'worker'],
+    tourism: ['entrepreneur'],
+  };
+  if (c.field) return byField[c.field] || ['entrepreneur', 'msme'];
+  if (c.business_status || c.financial_need) return ['entrepreneur', 'msme'];
+  return ['unemployed', 'worker']; // skills & employment
+}
+
 export default function ResultsScreen({
   schemes,
   userCriteria,
@@ -43,7 +65,7 @@ export default function ResultsScreen({
   useEffect(() => {
     let active = true;
     setEligibleExtra(null);
-    getEligibleCatalogueSchemes(deriveBenefitTypes(userCriteria), 12)
+    getEligibleCatalogueSchemes(deriveBenefitTypes(userCriteria), deriveAudiences(userCriteria), 20)
       .then((list) => { if (active) setEligibleExtra(list); });
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
