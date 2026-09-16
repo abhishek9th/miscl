@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, Loader2, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench, ClipboardList, ChevronsLeft, ChevronsRight, GripHorizontal } from 'lucide-react';
+import { ArrowLeft, BadgePercent, Briefcase, Building2, CheckCircle2, ExternalLink, FileText, GraduationCap, IndianRupee, Landmark, ListOrdered, MapPin, Pause, Printer, Sprout, Users, Volume2, Wrench, ClipboardList, ChevronsLeft, ChevronsRight, GripHorizontal } from 'lucide-react';
 import { readTextAloud, stopTextAloud } from '../services/audioService';
 import { getBankNavigationUrl, getGeneralBankNavigationUrl, getBankDirectionsUrl, getSchemeProviders } from '../services/bankService';
 import ApplicationJourney from './ApplicationJourney';
@@ -112,28 +112,13 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
   const [speaking, setSpeaking] = useState(false);
   const [regState, setRegState] = useState('idle'); // idle | saving | done | error
   const [showJourney, setShowJourney] = useState(false);
-  const [locatingBank, setLocatingBank] = useState(null); // shortName being located
 
-  // Open Google Maps directions to the nearest branch of the clicked bank, using
-  // the user's live location as the route origin. A blank tab is opened up-front
-  // (inside the click gesture) so the later navigation isn't blocked as a popup.
+  // Open Google Maps directions to the nearest branch of the clicked bank.
+  // Opened synchronously inside the click so it is not blocked as a popup; if we
+  // already know the user's coordinates they become the route origin, otherwise
+  // Google Maps uses the device's current location as the starting point.
   const openBankDirections = (bank) => {
-    const win = window.open('about:blank', '_blank', 'noopener,noreferrer');
-    const go = (loc) => {
-      const url = getBankDirectionsUrl(bank, loc);
-      if (win) win.location.href = url;
-      else window.open(url, '_blank', 'noopener,noreferrer');
-    };
-    if (navigator.geolocation) {
-      setLocatingBank(bank.shortName);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => { setLocatingBank(null); go({ lat: pos.coords.latitude, lon: pos.coords.longitude, state: userLocation.state }); },
-        () => { setLocatingBank(null); go(userLocation); }, // denied/unavailable → stored location
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-      );
-    } else {
-      go(userLocation);
-    }
+    window.open(getBankDirectionsUrl(bank, userLocation), '_blank', 'noopener,noreferrer');
   };
 
   const handleRegister = async () => {
@@ -222,15 +207,12 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
           key={bank.shortName}
           type="button"
           onClick={() => openBankDirections(bank)}
-          disabled={locatingBank === bank.shortName}
           title={tr(`Directions to the nearest ${bank.name}`, `निकटतम ${bank.name} तक दिशा-निर्देश`)}
           aria-label={tr(`Directions to the nearest ${bank.name}`, `निकटतम ${bank.name} तक दिशा-निर्देश`)}
-          className="relative bg-white border border-slate-300 rounded-md px-3 py-2 h-14 flex items-center justify-center min-w-[90px] transition-all hover:border-gov-navy hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gov-saffron cursor-pointer disabled:opacity-60 disabled:cursor-wait">
-          {locatingBank === bank.shortName
-            ? <Loader2 className="w-5 h-5 animate-spin text-gov-navy" />
-            : bank.logo
-              ? <img src={bank.logo} alt={bank.name} className="h-8 max-w-[110px] object-contain pointer-events-none" onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement('span'), { textContent: bank.shortName, className: 'text-sm font-bold text-slate-800' })); }} />
-              : <span className="text-sm font-bold text-slate-800">{bank.shortName}</span>}
+          className="bg-white border border-slate-300 rounded-md px-3 py-2 h-14 flex items-center justify-center min-w-[90px] transition-all hover:border-gov-navy hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gov-saffron cursor-pointer">
+          {bank.logo
+            ? <img src={bank.logo} alt={bank.name} className="h-8 max-w-[110px] object-contain pointer-events-none" onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement('span'), { textContent: bank.shortName, className: 'text-sm font-bold text-slate-800' })); }} />
+            : <span className="text-sm font-bold text-slate-800">{bank.shortName}</span>}
         </button>
       ))}</div></>}
       <p className="mt-3 text-xs text-slate-500">{tr('Confirm scheme eligibility and availability with the branch before visiting.', 'शाखा में जाने से पहले पात्रता और उपलब्धता की पुष्टि करें।')}</p>

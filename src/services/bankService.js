@@ -62,19 +62,15 @@ export function getBankNavigationUrl(provider, location = {}) {
   return `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query }).toString()}`;
 }
 
-// Directions (not just search) to the nearest branch of a specific bank. When we
-// have the user's live coordinates we set them as the route origin and let Google
-// Maps resolve the destination to the closest matching branch; without coords we
-// fall back to a state-scoped destination so it still opens somewhere sensible.
+// Directions to the nearest branch of a specific bank. Destination is just the
+// bank name so Google Maps resolves it to the closest matching branch relative to
+// the route origin. When we already know the user's coordinates we pass them as
+// the origin; otherwise we omit origin and Google Maps uses the device's current
+// location as the starting point (and asks for it in its own tab if needed).
 export function getBankDirectionsUrl(provider, location = {}) {
   const name = provider.searchName || provider.name;
-  const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
-  if (location.lat && location.lon) {
-    params.set('origin', `${location.lat},${location.lon}`);
-    params.set('destination', `${name} near ${location.lat},${location.lon}`);
-  } else {
-    params.set('destination', `${name}, ${location.state || 'India'}`);
-  }
+  const params = new URLSearchParams({ api: '1', destination: name, travelmode: 'driving' });
+  if (location.lat && location.lon) params.set('origin', `${location.lat},${location.lon}`);
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
