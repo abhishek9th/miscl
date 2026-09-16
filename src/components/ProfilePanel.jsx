@@ -89,7 +89,7 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
       state: p?.state || '', gender: p?.gender || '', social_category: p?.social_category || '',
       annual_income: p?.annual_income ?? '', date_of_birth: p?.date_of_birth || '', age: p?.age ?? '',
       spouse_name: p?.spouse_name || '', address: p?.address || '', pincode: p?.pincode || '',
-      education_level: p?.education_level || '',
+      education_level: p?.education_level || '', occupation: p?.occupation || '',
       annual_personal_income: p?.annual_personal_income ?? '', family_size: p?.family_size ?? '',
     };
   }
@@ -121,6 +121,7 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
         date_of_birth: form.date_of_birth || null, age: form.age === '' ? null : Number(form.age),
         spouse_name: form.spouse_name || null, address: form.address || null,
         pincode: form.pincode || null, education_level: form.education_level || null,
+        occupation: form.occupation || null,
         annual_personal_income: form.annual_personal_income === '' ? null : Number(form.annual_personal_income),
         family_size: form.family_size === '' ? null : Number(form.family_size),
       });
@@ -291,6 +292,12 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
                   <label className="block text-xs font-bold text-slate-500 mb-1">{tr('Annual Family Income (₹)', 'वार्षिक पारिवारिक आय (₹)')}</label>
                   <input type="number" value={form.annual_income} onChange={(e) => setForm((f) => ({ ...f, annual_income: e.target.value }))}
                     placeholder={tr('e.g. 250000', 'उदा. 250000')}
+                    className="w-full h-11 px-3 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">{tr('Occupation', 'व्यवसाय')}</label>
+                  <input type="text" value={form.occupation} onChange={(e) => setForm((f) => ({ ...f, occupation: e.target.value }))}
+                    placeholder={tr('e.g. Farmer, Student, Shopkeeper', 'उदा. किसान, छात्र, दुकानदार')}
                     className="w-full h-11 px-3 rounded-lg border border-slate-300 text-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
