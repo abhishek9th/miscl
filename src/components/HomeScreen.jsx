@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users, Banknote, BarChart3, Info, Star, ChevronRight, ChevronsRight, Sprout, Landmark, Briefcase } from 'lucide-react';
+import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users, Star, ChevronRight, ChevronsRight, Sprout, Landmark, Briefcase } from 'lucide-react';
 import { useI18n } from '../i18n';
 import EligibilityDashboard from './EligibilityDashboard';
 
@@ -35,43 +35,7 @@ export default function HomeScreen({
   onOpenProfile,
   onOpenEligibility,
 }) {
-  const { t, tr, trText, lang } = useI18n();
-
-  // EMI Calculator State — pre-filled with sensible defaults so an estimate
-  // shows immediately, matching common government-loan calculators.
-  const [loanAmount, setLoanAmount] = useState('1000000');
-  const [loanTenure, setLoanTenure] = useState('5');
-  const [interestRate, setInterestRate] = useState('8.5');
-
-  // Calculate EMI
-  const calculateEMI = () => {
-    if (!loanAmount || !loanTenure || !interestRate) return null;
-    
-    const principal = parseFloat(loanAmount);
-    const months = parseFloat(loanTenure) * 12;
-    const monthlyRate = parseFloat(interestRate) / 12 / 100;
-    
-    if (monthlyRate === 0) {
-      const emi = principal / months;
-      return {
-        emi: emi.toFixed(0),
-        totalAmount: principal.toFixed(0),
-        totalInterest: '0'
-      };
-    }
-    
-    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-    const totalAmount = emi * months;
-    const totalInterest = totalAmount - principal;
-    
-    return {
-      emi: emi.toFixed(0),
-      totalAmount: totalAmount.toFixed(0),
-      totalInterest: totalInterest.toFixed(0)
-    };
-  };
-
-  const emiResult = calculateEMI();
+  const { t, tr, trText } = useI18n();
 
   return (
     <div className="w-full font-sans space-y-6">
@@ -345,123 +309,16 @@ export default function HomeScreen({
         </div>
       </section>
 
-      {/* EMI CALCULATOR SECTION */}
+      {/* POPULAR SCHEMES */}
       {/* emi-card-section opts this section back into rounded cards — see the
-          matching override in index.css next to the site-wide square-edge reset. */}
+          matching override in index.css next to the site-wide square-edge reset.
+          (Used to also hold a generic EMI calculator with a user-typed interest
+          rate; removed in favour of the real, scheme-specific calculator on each
+          loan scheme's own detail page, driven by that scheme's actual extracted
+          rate data instead of a guessed one — see LoanEmiCalculator.jsx.) */}
       <section className="emi-card-section grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-        {/* Card 1: Calculator Form — one uniform accent color throughout (no
-            multicolored per-field theming), all text sized up 35% from base. */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-7">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0B75C9] flex items-center justify-center shrink-0">
-              <Banknote className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-[1.519rem] font-black text-[#0B3D71] leading-tight">{tr('EMI Calculator', 'EMI कैलकुलेटर')}</h3>
-              <p className="text-[1.0125rem] text-slate-500 font-semibold">{tr('Estimate your monthly EMI for government loans', 'सरकारी लोन के लिए अपनी मासिक किस्त का अनुमान लगाएं')}</p>
-            </div>
-          </div>
-
-          {/* Loan Amount Slider */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Loan Amount (₹)', 'लोन राशि (₹)')}</label>
-              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">
-                ₹ {parseInt(loanAmount || 0).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}
-              </span>
-            </div>
-            <input
-              type="range" min="10000" max="5000000" step="10000" value={loanAmount}
-              onChange={(e) => setLoanAmount(e.target.value)}
-              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
-              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(loanAmount - 10000) / (5000000 - 10000) * 100}%, #E2E8F0 ${(loanAmount - 10000) / (5000000 - 10000) * 100}%, #E2E8F0 100%)` }}
-            />
-            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
-              <span>₹10,000</span><span>₹50,00,000</span>
-            </div>
-          </div>
-
-          {/* Loan Tenure Slider */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Loan Tenure (Years)', 'ऋण अवधि (वर्ष)')}</label>
-              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">
-                {loanTenure} {tr('years', 'वर्ष')}
-              </span>
-            </div>
-            <input
-              type="range" min="1" max="30" step="1" value={loanTenure}
-              onChange={(e) => setLoanTenure(e.target.value)}
-              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
-              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(loanTenure - 1) / (30 - 1) * 100}%, #E2E8F0 ${(loanTenure - 1) / (30 - 1) * 100}%, #E2E8F0 100%)` }}
-            />
-            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
-              <span>1 {tr('year', 'वर्ष')}</span><span>30 {tr('years', 'वर्ष')}</span>
-            </div>
-          </div>
-
-          {/* Interest Rate Slider */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <label className="text-[1.18125rem] font-bold text-slate-700">{tr('Interest Rate (% p.a.)', 'ब्याज दर (% वार्षिक)')}</label>
-              <span className="text-[1.18125rem] font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1 whitespace-nowrap">{interestRate}%</span>
-            </div>
-            <input
-              type="range" min="4" max="12" step="0.5" value={interestRate}
-              onChange={(e) => setInterestRate(e.target.value)}
-              className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer slider"
-              style={{ background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(interestRate - 4) / (12 - 4) * 100}%, #E2E8F0 ${(interestRate - 4) / (12 - 4) * 100}%, #E2E8F0 100%)` }}
-            />
-            <div className="flex justify-between text-[1.0125rem] font-semibold text-slate-400">
-              <span>4%</span><span>12%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Estimated EMI */}
-        <div className="lg:col-span-4 bg-emerald-50/70 border border-emerald-100 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-emerald-700" />
-            <h4 className="text-sm font-black text-emerald-800">{tr('Your Estimated EMI', 'आपकी अनुमानित EMI')}</h4>
-          </div>
-
-          {emiResult ? (
-            <>
-              <div>
-                <p className="text-3xl font-black text-slate-900">₹ {parseInt(emiResult.emi).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}</p>
-                <p className="text-[1.275rem] text-slate-500 font-semibold mt-0.5">{tr('per month', 'प्रति माह')}</p>
-              </div>
-
-              <div className="bg-white/70 rounded-xl divide-y divide-emerald-100 border border-emerald-100">
-                <div className="flex items-center justify-between px-3.5 py-2.5">
-                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Loan Amount', 'लोन राशि')}</span>
-                  <span className="text-[1.4875rem] font-bold text-slate-800">₹ {parseInt(loanAmount || 0).toLocaleString(lang === 'en' ? 'en-US' : 'en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between px-3.5 py-2.5">
-                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Tenure', 'अवधि')}</span>
-                  <span className="text-[1.4875rem] font-bold text-slate-800">{loanTenure} {tr('years', 'वर्ष')}</span>
-                </div>
-                <div className="flex items-center justify-between px-3.5 py-2.5">
-                  <span className="text-[1.275rem] font-semibold text-slate-500">{tr('Interest Rate', 'ब्याज दर')}</span>
-                  <span className="text-[1.4875rem] font-bold text-slate-800">{interestRate}% {tr('p.a.', 'वार्षिक')}</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 text-[1.275rem] text-emerald-800 font-semibold leading-relaxed">
-                <Info className="w-4 h-4 shrink-0 mt-1" />
-                {tr('This is an estimate. Actual EMI may vary based on the scheme and lender terms.', 'यह एक अनुमान है। वास्तविक EMI योजना और ऋणदाता की शर्तों के अनुसार भिन्न हो सकती है।')}
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-slate-600 font-semibold py-6 text-center">
-              {tr('Enter loan amount, tenure and rate to see your EMI', 'लोन राशि, वर्ष और ब्याज दर दर्ज करके EMI देखें')}
-            </p>
-          )}
-        </div>
-
-        {/* Card 3: Popular Schemes */}
-        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
+        <div className="lg:col-span-12 lg:max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
           <div className="flex items-start gap-2">
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
               <Star className="w-4 h-4" fill="currentColor" />
