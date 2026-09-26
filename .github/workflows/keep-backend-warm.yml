@@ -2,9 +2,14 @@ name: Keep backend warm
 
 # Render's free tier spins the misclback service down after ~15 min idle, and
 # the next request then pays a ~50s cold-start (see src/services/authService.js
-# for the frontend-side timeout/warmup that also covers this). Pinging the
-# cheap /api/health endpoint every 10 minutes keeps it from ever going idle,
-# so real user requests (sign-in, catalogue, etc.) don't hit that cold start.
+# for the frontend-side timeout/warmup that also covers this). Pinging
+# /api/health every 10 minutes keeps it from ever going idle, so real user
+# requests (sign-in, catalogue, etc.) don't hit that cold start.
+#
+# /api/health also does one trivial Supabase read, so this same ping keeps the
+# Supabase free-tier project from auto-pausing after ~7 days of no DB activity
+# (Render staying warm alone doesn't touch the DB) — that pause is what caused
+# every DB-backed route to fail once already, even with the backend awake.
 on:
   schedule:
     - cron: '*/10 * * * *'
