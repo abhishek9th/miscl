@@ -3,9 +3,17 @@ import { widgetSendOtp, widgetVerifyOtp, widgetRetryOtp, extractAccessToken, isO
 
 const API = import.meta.env.VITE_API_URL || '';
 
+// The backend (Render free tier) spins down when idle and takes up to ~50s to
+// wake on the next request. 30s used to be shorter than that cold start, so a
+// sign-in/register/OTP call would abort with "took too long" right as the
+// server was finishing waking up. 60s covers the cold start; warmupBackend()
+// below also fires an early, fire-and-forget ping so the server is usually
+// already awake by the time the user submits the form.
+const REQUEST_TIMEOUT_MS = 60000;
+
 async function postJson(path, body) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 30000);
+  const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
   let res;
   try {
     res = await fetch(`${API}${path}`, {
@@ -38,6 +46,14 @@ async function postJson(path, body) {
     throw err;
   }
   return data;
+}
+
+// Fire-and-forget ping to wake a sleeping Render backend as early as possible
+// (called on the login screen mounting, well before the user submits a form).
+// Never throws — a failed/slow warmup just means the real request pays the
+// full cold-start cost, same as before this existed.
+export function warmupBackend() {
+  fetch(`${API}/api/health`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }).catch(() => {});
 }
 
 function ensureConfigured() {

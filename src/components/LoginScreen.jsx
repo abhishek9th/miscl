@@ -5,7 +5,7 @@ import {
   ChevronDown, Languages, Check, MapPin,
 } from 'lucide-react';
 import { INDIAN_STATES } from '../services/locationService';
-import { login, sendOtp, verifyOtp, retryOtp, register, forgotCheck, registerCheck, resetPassword } from '../services/authService';
+import { login, sendOtp, verifyOtp, retryOtp, register, forgotCheck, registerCheck, resetPassword, warmupBackend } from '../services/authService';
 import { warmupOtpWidget, loadOtpWidget, isOtpWidgetConfigured } from '../services/msg91Widget';
 import { LANGUAGES } from '../data/translations';
 import { useI18n } from '../i18n';
@@ -63,6 +63,28 @@ const SOCIAL = [
 
 const inputCls =
   'w-full h-[52px] px-4 rounded-lg border border-slate-300 text-slate-800 placeholder:text-slate-400 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 outline-none transition';
+
+// Shows a "waking up the server" hint once a backend call has been loading for
+// a while, so a Render cold start (~50s) doesn't just look like a frozen page.
+function useSlowHint(loading, delayMs = 6000) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!loading) { setSlow(false); return; }
+    const t = setTimeout(() => setSlow(true), delayMs);
+    return () => clearTimeout(t);
+  }, [loading, delayMs]);
+  return slow;
+}
+
+function SlowHint({ show }) {
+  const { tr } = useI18n();
+  if (!show) return null;
+  return (
+    <p className="text-center text-[13px] text-slate-400">
+      {tr('Still working — the server is waking up, this can take up to a minute.', 'सर्वर अभी शुरू हो रहा है, इसमें एक मिनट तक लग सकता है।')}
+    </p>
+  );
+}
 
 function ErrorBanner({ message }) {
   if (!message) return null;
@@ -264,7 +286,7 @@ export default function LoginScreen({ onAuthed, onBackToHome }) {
     try { return !sessionStorage.getItem('schemesetu_loc_done'); } catch { return true; }
   });
 
-  useEffect(() => { warmupOtpWidget(); }, []);
+  useEffect(() => { warmupOtpWidget(); warmupBackend(); }, []);
 
   const handleLocationGranted = (locData) => {
     try {
@@ -317,6 +339,7 @@ function LoginView({ onAuthed, onRegister, onForgot }) {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const slow = useSlowHint(loading);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -366,6 +389,7 @@ function LoginView({ onAuthed, onRegister, onForgot }) {
         </div>
 
         <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Signing in…', 'साइन इन हो रहा है…') : tr('Login', 'लॉगिन')}</PrimaryBtn>
+        <SlowHint show={slow} />
 
         <div className="text-center">
           <button type="button" onClick={onForgot} className="text-sm font-semibold hover:underline" style={{ color: BLUE }}>
@@ -411,6 +435,7 @@ function ForgotView({ onAuthed, onBackToLogin }) {
   const [step, setStep] = useState('mobile'); // mobile | otp | reset
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const slow = useSlowHint(loading);
 
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -494,6 +519,7 @@ function ForgotView({ onAuthed, onBackToLogin }) {
             </div>
             <div id="msg91-captcha" />
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Sending OTP…', 'ओटीपी भेजा जा रहा है…') : tr('Send OTP', 'ओटीपी भेजें')}</PrimaryBtn>
+            <SlowHint show={slow} />
           </form>
         )}
 
@@ -503,6 +529,7 @@ function ForgotView({ onAuthed, onBackToLogin }) {
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
               placeholder="••••" className={inputCls + ' tracking-[0.5em] text-center text-lg'} />
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Verifying…', 'सत्यापित हो रहा है…') : tr('Verify & Continue', 'सत्यापित करें और आगे बढ़ें')}</PrimaryBtn>
+            <SlowHint show={slow} />
             <div className="text-center text-sm">
               {cooldown > 0
                 ? <span className="text-slate-400">{tr('Resend OTP in', 'ओटीपी पुनः भेजें')} {cooldown}s</span>
@@ -533,6 +560,7 @@ function ForgotView({ onAuthed, onBackToLogin }) {
               </div>
             </div>
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Updating…', 'अपडेट हो रहा है…') : tr('Update Password', 'पासवर्ड अपडेट करें')}</PrimaryBtn>
+            <SlowHint show={slow} />
             <SecureNote />
           </form>
         )}
@@ -548,6 +576,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [errorCode, setErrorCode] = useState('');
+  const slow = useSlowHint(loading);
 
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -696,6 +725,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
               </button>
             )}
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Sending OTP…', 'ओटीपी भेजा जा रहा है…') : tr('Send OTP', 'ओटीपी भेजें')}</PrimaryBtn>
+            <SlowHint show={slow} />
             <SecureNote />
           </form>
         )}
@@ -706,6 +736,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
               placeholder="••••" className={inputCls + ' tracking-[0.5em] text-center text-lg'} />
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Verifying…', 'सत्यापित हो रहा है…') : tr('Verify & Continue', 'सत्यापित करें और आगे बढ़ें')}</PrimaryBtn>
+            <SlowHint show={slow} />
             <div className="text-center text-sm">
               {cooldown > 0
                 ? <span className="text-slate-400">{tr('Resend OTP in', 'ओटीपी पुनः भेजें')} {cooldown}s</span>
@@ -829,6 +860,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
 
             <ErrorBanner message={error} />
             <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Creating account…', 'खाता बनाया जा रहा है…') : tr('Create Account', 'खाता बनाएँ')}</PrimaryBtn>
+            <SlowHint show={slow} />
             <SecureNote />
           </form>
         )}
