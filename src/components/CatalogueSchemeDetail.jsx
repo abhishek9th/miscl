@@ -4,6 +4,7 @@ import { useI18n } from '../i18n';
 import { getCatalogueScheme } from '../services/catalogueService';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import ApplicationReadiness from './ApplicationReadiness';
+import LoanEmiCalculator from './LoanEmiCalculator';
 
 // Some scraped fields (application_process, documents_required, faqs) were
 // stored double-encoded — e.g. the STRING '["Online\\nStep 1:..."]' instead of a
@@ -110,6 +111,9 @@ export default function CatalogueSchemeDetail({ slug, onBack }) {
       <Section icon={FileText} title="About this scheme" hiTitle="योजना के बारे में" text={scrapedToText(scheme.details_text)} />
       <Section icon={CheckCircle2} title="Benefits" hiTitle="लाभ" text={scrapedToText(scheme.benefits_text)} />
       <Section icon={ListChecks} title="Eligibility" hiTitle="पात्रता" text={scrapedToText(scheme.eligibility_text)} />
+
+      {scheme.is_loan_scheme && <LoanEmiCalculator scheme={scheme} />}
+
       <Section icon={ListChecks} title="Application Process" hiTitle="आवेदन प्रक्रिया" text={scrapedToText(scheme.application_process)} />
       <Section icon={FileText} title="Documents Required" hiTitle="आवश्यक दस्तावेज़" text={scrapedToText(scheme.documents_required)} />
 
