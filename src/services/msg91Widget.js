@@ -42,13 +42,37 @@ export function warmupOtpWidget() {
   const marker = document.createElement('meta');
   marker.id = 'msg91-warmup';
   document.head.appendChild(marker);
-  for (const rel of ['dns-prefetch', 'preconnect']) {
-    const link = document.createElement('link');
-    link.rel = rel;
-    link.href = 'https://verify.msg91.com';
-    if (rel === 'preconnect') link.crossOrigin = '';
-    document.head.appendChild(link);
+  // The widget script plus the captcha it renders (reCAPTCHA) are the slow part
+  // of the first OTP send, so warm every host involved and preload the script.
+  for (const href of ['https://verify.msg91.com', 'https://www.google.com', 'https://www.gstatic.com']) {
+    for (const rel of ['dns-prefetch', 'preconnect']) {
+      const link = document.createElement('link');
+      link.rel = rel;
+      link.href = href;
+      if (rel === 'preconnect') link.crossOrigin = '';
+      document.head.appendChild(link);
+    }
   }
+  const preload = document.createElement('link');
+  preload.rel = 'preload';
+  preload.as = 'script';
+  preload.href = 'https://verify.msg91.com/otp-provider.js';
+  preload.crossOrigin = '';
+  document.head.appendChild(preload);
+}
+
+// Resolves once the captcha has rendered into its container (or after
+// timeoutMs — captcha may be disabled on the widget, so never block forever).
+function waitForCaptcha(timeoutMs) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      const el = document.getElementById(CAPTCHA_RENDER_ID);
+      if (!el || el.childElementCount > 0 || Date.now() - start > timeoutMs) resolve();
+      else setTimeout(check, 150);
+    };
+    check();
+  });
 }
 
 export function loadOtpWidget() {
@@ -96,6 +120,9 @@ export function loadOtpWidget() {
 // identifier: mobile with country code, no "+"  (e.g. 919999999999)
 export async function widgetSendOtp(identifier) {
   await loadOtpWidget();
+  // Clicking before the captcha has rendered made the first send fail, so the
+  // user had to click twice. Wait for it, then send.
+  await waitForCaptcha(5000);
   return new Promise((resolve, reject) => {
     window.sendOtp(identifier, (data) => resolve(data), (err) => reject(normalizeErr(err)));
   });

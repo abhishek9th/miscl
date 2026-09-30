@@ -12,6 +12,7 @@ import { useI18n } from '../i18n';
 import FaceCapture from './FaceCapture';
 import LocationModal from './LocationModal';
 import PolicyModal from './PolicyModal';
+import { linkProvider } from '../services/digilockerDemo';
 import { isValidPincode, isValidPastDate, ageFromDob } from '../utils/validators';
 
 /* ---- Blue theme tokens ---- */
@@ -21,7 +22,7 @@ const BLUE_HOVER = '#1e40af';
 const ICON_BG = '#dbeafe';
 
 /* Demo account for reviewers (one-click login). */
-const DEMO_ID = '7007099534';
+const DEMO_ID = 'demouser@schemesetu.org';
 const DEMO_PASSWORD = '@Abhishek9th.';
 
 /* Brand logo — same mark used in the site Header. */
@@ -624,6 +625,21 @@ function RegisterView({ onAuthed, onBackToLogin }) {
   const AGE_OPTIONS = Array.from({ length: 121 }, (_, i) => i); // 0..120 — wide enough to always match the DOB-computed age
   const [facePhoto, setFacePhoto] = useState('');
 
+  // Simulated DigiLocker / NeSL authentication (prototype — no real account is
+  // contacted). Documents are recorded once the account exists.
+  const [linked, setLinked] = useState({ digilocker: false, nesl: false });
+  const [linking, setLinking] = useState('');
+  const authenticate = async (provider) => {
+    setLinking(provider);
+    await new Promise((r) => setTimeout(r, 1200));
+    setLinked((l) => ({ ...l, [provider]: true }));
+    setLinking('');
+  };
+  const doConnect = go(async () => {
+    if (!linked.digilocker || !linked.nesl) throw new Error(tr('Please authenticate both DigiLocker and NeSL to continue', 'आगे बढ़ने के लिए कृपया डिजिलॉकर और NeSL दोनों को प्रमाणित करें'));
+    setStep('photo');
+  });
+
   useEffect(() => { if (isOtpWidgetConfigured) loadOtpWidget().catch(() => {}); }, []);
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -677,7 +693,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) throw new Error(tr('Please enter a valid email address', 'कृपया एक मान्य ईमेल पता दर्ज करें'));
     if (password.length < 6) throw new Error(tr('Password must be at least 6 characters', 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए'));
     if (password !== confirm) throw new Error(tr('Passwords do not match', 'पासवर्ड मेल नहीं खाते'));
-    setStep('photo');
+    setStep('connect');
   });
 
   const doComplete = go(async () => {
@@ -703,11 +719,14 @@ function RegisterView({ onAuthed, onBackToLogin }) {
         education_level: profile.education_level || null,
       },
     });
+    // Record what the linked providers "fetched" so it counts toward document
+    // readiness. Never block registration if this soft-fails.
+    try { for (const p of ['digilocker', 'nesl']) if (linked[p]) await linkProvider(p); } catch { /* ignore */ }
     // Fresh registration → App shows the "create a profile for future use" page.
     onAuthed?.(session, { justRegistered: true });
   });
 
-  const steps = ['mobile', 'otp', 'details', 'photo'];
+  const steps = ['mobile', 'otp', 'details', 'connect', 'photo'];
   const stepIndex = steps.indexOf(step);
   const onBack = () => (stepIndex === 0 ? onBackToLogin() : setStep(steps[stepIndex - 1]));
 
@@ -715,12 +734,13 @@ function RegisterView({ onAuthed, onBackToLogin }) {
     mobile: [tr('Create your account', 'अपना खाता बनाएँ'), tr('We’ll send a one-time OTP to verify your number', 'आपके नंबर को सत्यापित करने के लिए हम एक ओटीपी भेजेंगे')],
     otp: [tr('Verify your mobile', 'अपना मोबाइल सत्यापित करें'), `${tr('Enter the code sent to', 'इस नंबर पर भेजा गया कोड दर्ज करें')} +91 ${mobile}`],
     details: [tr('Set up your account', 'अपना खाता सेट करें'), tr('Create a secure account to access your personalized dashboard.', 'अपने व्यक्तिगत डैशबोर्ड तक पहुँचने के लिए एक सुरक्षित खाता बनाएँ।')],
+    connect: [tr('Connect DigiLocker & NeSL', 'डिजिलॉकर और NeSL जोड़ें'), tr('Authenticate once so SchemeSetu can fetch your documents automatically.', 'एक बार प्रमाणित करें ताकि SchemeSetu आपके दस्तावेज़ स्वतः प्राप्त कर सके।')],
     photo: [tr('Add your photo & details', 'अपनी फ़ोटो और विवरण जोड़ें'), tr('A live photo is required; other details are optional.', 'एक लाइव फ़ोटो आवश्यक है; अन्य विवरण वैकल्पिक हैं।')],
   };
 
   return (
     <>
-      <StepHeader stepIndex={stepIndex} total={4} onBack={onBack} />
+      <StepHeader stepIndex={stepIndex} total={5} onBack={onBack} />
 
       <div className="mb-6">
         <h3 className="text-[32px] font-extrabold tracking-tight leading-tight" style={{ color: NAVY }}>{titles[step][0]}</h3>
@@ -804,6 +824,35 @@ function RegisterView({ onAuthed, onBackToLogin }) {
                   placeholder={tr('Re-enter your password', 'अपना पासवर्ड पुनः दर्ज करें')} className={inputCls + ' pl-11'} />
               </div>
             </div>
+            <PrimaryBtn type="submit" loading={loading} withArrow>{tr('Continue', 'आगे बढ़ें')}</PrimaryBtn>
+            <SecureNote />
+          </form>
+        )}
+
+        {step === 'connect' && (
+          <form onSubmit={doConnect} className="space-y-4">
+            {[
+              { p: 'digilocker', en: 'DigiLocker', hi: 'डिजिलॉकर', dEn: 'Aadhaar, income certificate, marksheets', dHi: 'आधार, आय प्रमाण पत्र, अंकतालिका' },
+              { p: 'nesl', en: 'NeSL', hi: 'NeSL', dEn: 'PAN, Form 16A, bank details', dHi: 'पैन, फ़ॉर्म 16A, बैंक विवरण' },
+            ].map(({ p, en, hi, dEn, dHi }) => (
+              <div key={p} className="flex items-center gap-3 border border-slate-200 rounded-lg p-3.5">
+                <ShieldCheck className="w-6 h-6 shrink-0" style={{ color: BLUE }} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-[15px]" style={{ color: NAVY }}>{tr(en, hi)}</div>
+                  <div className="text-xs text-slate-500">{tr(dEn, dHi)}</div>
+                </div>
+                {linked[p] ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-sm"><Check className="w-4 h-4" /> {tr('Authenticated', 'प्रमाणित')}</span>
+                ) : (
+                  <button type="button" onClick={() => authenticate(p)} disabled={!!linking}
+                    className="shrink-0 inline-flex items-center gap-1.5 border-2 rounded-md px-3 py-1.5 text-sm font-bold disabled:opacity-60" style={{ borderColor: BLUE, color: BLUE }}>
+                    {linking === p && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {linking === p ? tr('Authenticating…', 'प्रमाणित हो रहा है…') : tr('Authenticate', 'प्रमाणित करें')}
+                  </button>
+                )}
+              </div>
+            ))}
+            <p className="text-[11px] text-slate-400">{tr('Prototype: authentication is simulated and no real DigiLocker or NeSL account is contacted.', 'प्रोटोटाइप: प्रमाणीकरण सिम्युलेटेड है और कोई वास्तविक डिजिलॉकर या NeSL खाता संपर्क में नहीं है।')}</p>
             <PrimaryBtn type="submit" loading={loading} withArrow>{tr('Continue', 'आगे बढ़ें')}</PrimaryBtn>
             <SecureNote />
           </form>

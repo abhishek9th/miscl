@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle2, XCircle, Loader2, FileText, Unlock, Sparkles } from 'lucide-react';
+import { X, CheckCircle2, XCircle, Loader2, FileText, Unlock, Sparkles, ShieldCheck, Download } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { getDocumentVault } from '../services/documentVaultService';
 import { markDocumentAvailability } from '../services/readinessService';
+import { DEMO_DOCS, linkProvider, getFetchedSources } from '../services/digilockerDemo';
+import SourceBadge from './SourceBadge';
+
 
 // Central document vault (§17) with the "one document → many schemes" insight
 // (§18/§19): each missing document shows how many schemes it would make
@@ -16,8 +19,30 @@ export default function DocumentVault({ onClose }) {
   const [savingKey, setSavingKey] = useState(null);
   const [justUnlocked, setJustUnlocked] = useState(null); // { name, count }
 
-  const load = () => getDocumentVault().then(setData).catch(() => setError(true));
+  const [sources, setSources] = useState({}); // requirement_key -> provider
+  const [fetching, setFetching] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const load = async () => {
+    try {
+      const [vault, src] = await Promise.all([getDocumentVault(), getFetchedSources()]);
+      setSources(src);
+      setFetched(Object.values(src).includes('digilocker'));
+      setData(vault);
+    } catch { setError(true); }
+  };
   useEffect(() => { load(); }, []);
+
+  // Simulated DigiLocker pull (demo): records availability for every scheme
+  // requirement the demo documents cover, tagged so the UI can badge them.
+  const fetchFromDigiLocker = async () => {
+    setFetching(true);
+    try {
+      await linkProvider('digilocker');
+      setFetched(true);
+      await load();
+    } catch { /* soft-fail */ } finally { setFetching(false); }
+  };
 
   const markHave = async (doc) => {
     setSavingKey(doc.key);
@@ -54,6 +79,44 @@ export default function DocumentVault({ onClose }) {
           )}
 
           {data && (
+            <section className="rounded-md border border-blue-200 bg-blue-50/40 p-3.5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-black text-blue-900">{tr('DigiLocker', 'डिजिलॉकर')} <span className="text-[10px] font-bold uppercase text-slate-400">{tr('demo', 'डेमो')}</span></div>
+                    <div className="text-xs text-slate-500">{fetched ? tr('Documents fetched from your DigiLocker', 'आपके डिजिलॉकर से प्राप्त दस्तावेज़') : tr('Fetch your issued documents in one tap', 'अपने जारी दस्तावेज़ एक टैप में प्राप्त करें')}</div>
+                  </div>
+                </div>
+                {!fetched && (
+                  <button onClick={fetchFromDigiLocker} disabled={fetching}
+                    className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded px-3 py-2 disabled:opacity-60">
+                    {fetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                    {fetching ? tr('Fetching…', 'प्राप्त हो रहा है…') : tr('Fetch from DigiLocker', 'डिजिलॉकर से प्राप्त करें')}
+                  </button>
+                )}
+              </div>
+              {fetched && (
+                <ul className="mt-3 divide-y divide-blue-100 bg-white border border-blue-100 rounded">
+                  {DEMO_DOCS.filter((d) => d.provider === 'digilocker').map((d) => (
+                    <li key={d.id} className="flex items-center justify-between gap-2 px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-bold text-slate-800 truncate">{tr(d.en, d.hi)}</div>
+                          <div className="text-[11px] text-slate-400">{tr('Issued by', 'जारीकर्ता')} {d.issuer}</div>
+                        </div>
+                      </div>
+                      <SourceBadge provider="digilocker" />
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-2 text-[10px] text-slate-400">{tr('Demo data for the prototype — no real DigiLocker account is connected.', 'प्रोटोटाइप के लिए डेमो डेटा — कोई वास्तविक डिजिलॉकर खाता जुड़ा नहीं है।')}</p>
+            </section>
+          )}
+
+          {data && (
             <>
               <p className="text-sm text-slate-500 font-semibold">
                 {tr(`You have ${data.have} of ${data.total} documents that these schemes ask for.`, `इन योजनाओं द्वारा माँगे गए ${data.total} में से ${data.have} दस्तावेज़ आपके पास हैं।`)}
@@ -66,7 +129,10 @@ export default function DocumentVault({ onClose }) {
                         ? <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                         : <XCircle className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />}
                       <div className="min-w-0">
-                        <div className="font-bold text-slate-800 text-sm">{doc.name}</div>
+                        <div className="font-bold text-slate-800 text-sm flex flex-wrap items-center gap-x-2 gap-y-1">
+                          {doc.name}
+                          {doc.satisfied && <SourceBadge provider={sources[doc.key]} />}
+                        </div>
                         <div className="text-xs text-slate-500 mt-0.5">
                           {doc.satisfied
                             ? tr('Available', 'उपलब्ध')

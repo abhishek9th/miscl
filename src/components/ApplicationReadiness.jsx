@@ -6,6 +6,8 @@ import {
 import { useI18n } from '../i18n';
 import { getReadinessReport, findNearbyPartners, markDocumentAvailability } from '../services/readinessService';
 import { detectUserLocation } from '../services/locationService';
+import { getFetchedSources } from '../services/digilockerDemo';
+import SourceBadge from './SourceBadge';
 
 const RISK_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
 const RISK_STYLE = {
@@ -35,9 +37,11 @@ export default function ApplicationReadiness({ scheme }) {
   const [error, setError] = useState('');
   const [errorCode, setErrorCode] = useState(null);
   const [showNearby, setShowNearby] = useState(false);
+  const [sources, setSources] = useState({}); // requirement_key -> provider it was fetched from
 
   useEffect(() => {
     let active = true;
+    getFetchedSources().then((s) => { if (active) setSources(s); }).catch(() => {});
     setLoading(true);
     setError('');
     setErrorCode(null);
@@ -84,14 +88,14 @@ export default function ApplicationReadiness({ scheme }) {
       )}
 
       {!loading && report && (
-        <ReadinessBody report={report} tr={tr} onMarkPhysical={markPhysical}
+        <ReadinessBody report={report} tr={tr} onMarkPhysical={markPhysical} sources={sources}
           showNearby={showNearby} onOpenNearby={() => setShowNearby(true)} onCloseNearby={() => setShowNearby(false)} />
       )}
     </div>
   );
 }
 
-function ReadinessBody({ report, tr, onMarkPhysical, showNearby, onOpenNearby, onCloseNearby }) {
+function ReadinessBody({ report, tr, onMarkPhysical, sources, showNearby, onOpenNearby, onCloseNearby }) {
   const { eligibility, readiness, results, missing_by_priority: missingByPriority, category_specific: categorySpecific, explanation } = report;
 
   const applicableResults = results.filter((r) => r.applies);
@@ -147,7 +151,7 @@ function ReadinessBody({ report, tr, onMarkPhysical, showNearby, onOpenNearby, o
             <div key={category}>
               <h4 className="text-xs font-black text-gov-navy uppercase tracking-wider mb-1.5">{tr(category, category)}</h4>
               <div className="border border-slate-200 rounded-md divide-y divide-slate-100">
-                {items.map((r) => <RequirementRow key={r.requirement_key} r={r} tr={tr} onMarkPhysical={onMarkPhysical} />)}
+                {items.map((r) => <RequirementRow key={r.requirement_key} r={r} tr={tr} onMarkPhysical={onMarkPhysical} source={sources?.[r.requirement_key]} />)}
               </div>
             </div>
           ))}
@@ -208,7 +212,7 @@ const REQ_STATUS = {
 };
 const NON_DOC = ['eligibility', 'personal_information', 'application_specific'];
 
-function RequirementRow({ r, tr, onMarkPhysical }) {
+function RequirementRow({ r, tr, onMarkPhysical, source }) {
   const meta = REQ_STATUS[r.status] || REQ_STATUS.UNKNOWN;
   const isDoc = !NON_DOC.includes(r.requirement_type);
   return (
@@ -223,6 +227,9 @@ function RequirementRow({ r, tr, onMarkPhysical }) {
           <span className={`text-[11px] font-bold uppercase shrink-0 ${meta.color}`}>{tr(meta.label_en, meta.label_hi)}</span>
         </div>
 
+        {(r.status === 'READY' || r.status === 'UPLOADED') && source === 'digilocker' && (
+          <div className="mt-1"><SourceBadge provider={source} /></div>
+        )}
         {r.status === 'ALTERNATIVE_SATISFIED' && r.satisfied_by && (
           <p className="text-xs text-emerald-700 mt-0.5">{tr(`Satisfied by ${r.satisfied_by}`, `${r.satisfied_by} द्वारा पूरा`)}</p>
         )}
