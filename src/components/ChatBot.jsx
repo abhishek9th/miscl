@@ -80,19 +80,34 @@ export default function ChatBot({ onVoiceProfileReady, userProfile }) {
   // Initialize chat — and keep the greeting itself live-translated if the
   // user switches language before typing anything (it was previously frozen
   // in whatever language was active the moment the chat first opened).
+  //
+  // For languages other than English/Hindi, tr() returns the Hindi text until the
+  // machine translation arrives a moment later. Showing/speaking that fallback
+  // made the bot greet a Tamil user in Hindi, so the greeting is held back until
+  // the real translation is available (with a short timeout in case it never is).
+  const GREETING_EN = "Hello! I'm SchemeSetu. What kind of government scheme are you looking for?";
+  const GREETING_HI = 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?';
+  const greeting = tr(GREETING_EN, GREETING_HI);
+  const greetingPending = currentLang !== 'en' && currentLang !== 'hi' && greeting === GREETING_HI;
+  const [greetingTimedOut, setGreetingTimedOut] = useState(false);
+
   useEffect(() => {
-    if (!isOpen) { hasSpokenGreetingRef.current = false; return; }
-    const greeting = tr("Hello! I'm SchemeSetu. What kind of government scheme are you looking for?", 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?');
-    setMessages((prev) => (prev.length === 0 || (prev.length === 1 && prev[0].id === 1))
-      ? [{ id: 1, type: 'bot', text: greeting }]
-      : prev);
-    if (!hasSpokenGreetingRef.current) {
-      hasSpokenGreetingRef.current = true;
-      speak(greeting);
+    if (!isOpen || !greetingPending) { setGreetingTimedOut(false); return undefined; }
+    const timer = setTimeout(() => setGreetingTimedOut(true), 6000);
+    return () => clearTimeout(timer);
+  }, [isOpen, greetingPending, currentLang]);
+
+  useEffect(() => {
+    if (!isOpen) { hasSpokenGreetingRef.current = false; return undefined; }
+    if (!greetingPending || greetingTimedOut) {
+      // The "Speak bot messages" effect below reads this message aloud exactly once.
+      setMessages((prev) => (prev.length === 0 || (prev.length === 1 && prev[0].id === 1))
+        ? [{ id: 1, type: 'bot', text: greeting }]
+        : prev);
     }
     return () => { stopTextAloud(); cleanupRecording(); fallbackRef.current?.abort?.(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, currentLang]);
+  }, [isOpen, currentLang, greeting, greetingPending, greetingTimedOut]);
 
   // Speak bot messages
   useEffect(() => {

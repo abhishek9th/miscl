@@ -136,12 +136,37 @@ function readViaCloud(text, lang, langCode, onEnd) {
   return true;
 }
 
-export function readTextAloud(text, langCode = 'hi-IN', onEnd = () => {}) {
-  const lang = localeFor(langCode).split('-')[0];
-  if (CLOUD_LANGS.has(lang) && !hasInstalledVoice(localeFor(langCode))) {
-    return readViaCloud(text, lang, langCode, onEnd);
+// The voice must match the language the TEXT is actually written in, not just the
+// language the site is set to — otherwise a Tamil voice ends up reading Hindi
+// (or English) text as noise. Pick by the dominant script; ambiguous cases keep
+// the site language (e.g. Devanagari is Marathi when the site is Marathi).
+const SCRIPTS = [
+  ['hi', /[ऀ-ॿ]/g], ['bn', /[ঀ-৿]/g], ['pa', /[਀-੿]/g], ['gu', /[઀-૿]/g],
+  ['or', /[଀-୿]/g], ['ta', /[஀-௿]/g], ['te', /[ఀ-౿]/g], ['kn', /[ಀ-೿]/g],
+  ['ml', /[ഀ-ൿ]/g], ['ur', /[؀-ۿ]/g], ['en', /[A-Za-z]/g],
+];
+export function speechLangFor(text, siteLang) {
+  let best = null; let bestCount = 0; let latin = 0;
+  for (const [lang, re] of SCRIPTS) {
+    const n = (String(text).match(re) || []).length;
+    if (lang === 'en') { latin = n; continue; }
+    if (n > bestCount) { best = lang; bestCount = n; }
   }
-  return readWithBrowser(text, langCode, onEnd);
+  // A few Latin words (e.g. the brand name "SchemeSetu") must not turn a Tamil/Hindi
+  // sentence into an English one: a native script wins unless Latin clearly dominates.
+  if (best && bestCount >= latin * 0.3) return best === 'hi' && siteLang === 'mr' ? 'mr' : best;
+  if (latin > 0) return 'en';
+  return siteLang;
+}
+
+export function readTextAloud(text, langCode = 'hi-IN', onEnd = () => {}) {
+  const siteLang = localeFor(langCode).split('-')[0];
+  const lang = speechLangFor(text, siteLang);
+  const code = lang === siteLang ? langCode : lang;
+  if (CLOUD_LANGS.has(lang) && !hasInstalledVoice(localeFor(code))) {
+    return readViaCloud(text, lang, code, onEnd);
+  }
+  return readWithBrowser(text, code, onEnd);
 }
 
 function readWithBrowser(text, langCode = 'hi-IN', onEnd = () => {}) {
