@@ -17,7 +17,7 @@ export default function AiAssistantModal({ onClose, onVoiceProfileReady, current
   const speak = (text) => {
     if (!text) return;
     setIsSpeaking(true);
-    readTextAloud(text, currentLang, () => setIsSpeaking(false));
+    if (!readTextAloud(text, currentLang, () => setIsSpeaking(false))) setIsSpeaking(false);
   };
 
   useEffect(() => {

@@ -65,9 +65,10 @@ export default function ChatBot({ onVoiceProfileReady, userProfile }) {
   const speak = (text) => {
     if (!text) return;
     setIsSpeaking(true);
-    readTextAloud(text, currentLang, () => {
+    const started = readTextAloud(text, currentLang, () => {
       setIsSpeaking(false);
     });
+    if (!started) setIsSpeaking(false); // no voice available for this language — text only
   };
 
   // Stop speaking
