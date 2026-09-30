@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Phone, GraduationCap, HeartPulse, IndianRupee, Users, Eye, EyeOff,
   Lock, User, Mail, ArrowLeft, ArrowRight, Loader2, ShieldCheck, AlertCircle,
-  ChevronDown, Languages, Check, MapPin,
+  ChevronDown, Languages, Check, MapPin, PlayCircle,
 } from 'lucide-react';
 import { INDIAN_STATES } from '../services/locationService';
 import { login, sendOtp, verifyOtp, retryOtp, register, forgotCheck, registerCheck, resetPassword, warmupBackend } from '../services/authService';
@@ -19,6 +19,10 @@ const NAVY = '#0f2d63';
 const BLUE = '#1d4ed8';
 const BLUE_HOVER = '#1e40af';
 const ICON_BG = '#dbeafe';
+
+/* Demo account for reviewers (one-click login). */
+const DEMO_ID = '7007099534';
+const DEMO_PASSWORD = '@Abhishek9th.';
 
 /* Brand logo — same mark used in the site Header. */
 function BrandLogo() {
@@ -341,18 +345,26 @@ function LoginView({ onAuthed, onRegister, onForgot }) {
   const [error, setError] = useState('');
   const slow = useSlowHint(loading);
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const attempt = async (id, pw) => {
     setError('');
     setLoading(true);
     try {
-      const session = await login(email, password);
+      const session = await login(id, pw);
       onAuthed?.(session);
     } catch (err) {
       setError(err.message || tr('Login failed. Please try again.', 'लॉगिन विफल रहा। कृपया पुनः प्रयास करें।'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const submit = (e) => { e.preventDefault(); attempt(email, password); };
+
+  // One-click demo access for reviewers/invigilators.
+  const demoLogin = () => {
+    setEmail(DEMO_ID);
+    setPassword(DEMO_PASSWORD);
+    attempt(DEMO_ID, DEMO_PASSWORD);
   };
 
   return (
@@ -390,6 +402,16 @@ function LoginView({ onAuthed, onRegister, onForgot }) {
 
         <PrimaryBtn type="submit" loading={loading} withArrow>{loading ? tr('Signing in…', 'साइन इन हो रहा है…') : tr('Login', 'लॉगिन')}</PrimaryBtn>
         <SlowHint show={slow} />
+
+        <button
+          type="button"
+          onClick={demoLogin}
+          disabled={loading}
+          className="w-4/5 mx-auto h-[50px] flex items-center justify-center gap-2 border-2 font-bold text-[15px] bg-white hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          style={{ borderColor: BLUE, color: BLUE }}
+        >
+          <PlayCircle className="w-5 h-5" /> {tr('Login with the Demo ID', 'डेमो आईडी से लॉगिन करें')}
+        </button>
 
         <div className="text-center">
           <button type="button" onClick={onForgot} className="text-sm font-semibold hover:underline" style={{ color: BLUE }}>
