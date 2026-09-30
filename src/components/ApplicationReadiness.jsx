@@ -6,7 +6,7 @@ import {
 import { useI18n } from '../i18n';
 import { getReadinessReport, findNearbyPartners, markDocumentAvailability } from '../services/readinessService';
 import { detectUserLocation } from '../services/locationService';
-import { getFetchedSources } from '../services/digilockerDemo';
+import { getFetchedSources, getFetchedDocs } from '../services/digilockerDemo';
 import SourceBadge from './SourceBadge';
 
 const RISK_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
@@ -38,10 +38,12 @@ export default function ApplicationReadiness({ scheme }) {
   const [errorCode, setErrorCode] = useState(null);
   const [showNearby, setShowNearby] = useState(false);
   const [sources, setSources] = useState({}); // requirement_key -> provider it was fetched from
+  const [fetchedDocs, setFetchedDocs] = useState([]); // demo documents fetched via DigiLocker / NeSL
 
   useEffect(() => {
     let active = true;
     getFetchedSources().then((s) => { if (active) setSources(s); }).catch(() => {});
+    getFetchedDocs().then((d) => { if (active) setFetchedDocs(d); }).catch(() => {});
     setLoading(true);
     setError('');
     setErrorCode(null);
@@ -88,14 +90,14 @@ export default function ApplicationReadiness({ scheme }) {
       )}
 
       {!loading && report && (
-        <ReadinessBody report={report} tr={tr} onMarkPhysical={markPhysical} sources={sources}
+        <ReadinessBody report={report} tr={tr} onMarkPhysical={markPhysical} sources={sources} fetchedDocs={fetchedDocs}
           showNearby={showNearby} onOpenNearby={() => setShowNearby(true)} onCloseNearby={() => setShowNearby(false)} />
       )}
     </div>
   );
 }
 
-function ReadinessBody({ report, tr, onMarkPhysical, sources, showNearby, onOpenNearby, onCloseNearby }) {
+function ReadinessBody({ report, tr, onMarkPhysical, sources, fetchedDocs, showNearby, onOpenNearby, onCloseNearby }) {
   const { eligibility, readiness, results, missing_by_priority: missingByPriority, category_specific: categorySpecific, explanation } = report;
 
   const applicableResults = results.filter((r) => r.applies);
@@ -141,6 +143,9 @@ function ReadinessBody({ report, tr, onMarkPhysical, sources, showNearby, onOpen
         )}
         {explanation?.summary && <p className="mt-2.5 text-sm text-slate-700 leading-relaxed">{explanation.summary}</p>}
       </section>
+
+      {/* DOCUMENTS AT A GLANCE — what you have, what's extra, what's missing */}
+      <DocumentSummary results={results} fetchedDocs={fetchedDocs} tr={tr} onMarkPhysical={onMarkPhysical} />
 
       {/* COMPLETE REQUIREMENT CHECKLIST — every requirement, grouped, each with
           its own individual status (§8/§16/§17). Never sliced or collapsed. */}
@@ -211,6 +216,94 @@ const REQ_STATUS = {
   UNKNOWN: { Icon: HelpCircle, color: 'text-slate-400', label_en: 'Unknown', label_hi: 'अज्ञात' },
 };
 const NON_DOC = ['eligibility', 'personal_information', 'application_specific'];
+
+// Splits the user's documents against THIS scheme's document requirements:
+//  - needed & held  (with the fetched value / source when we have one)
+//  - missing        (required by the scheme, not held — called out explicitly)
+//  - extra          (fetched documents this scheme doesn't ask for)
+function DocumentSummary({ results, fetchedDocs, tr, onMarkPhysical }) {
+  const reqs = (results || []).filter((r) => r.applies && !NON_DOC.includes(r.requirement_type));
+  if (reqs.length === 0) return null;
+  const isHeld = (r) => ['READY', 'UPLOADED', 'ALTERNATIVE_SATISFIED'].includes(r.status);
+  const held = reqs.filter(isHeld);
+  const missing = reqs.filter((r) => !isHeld(r) && ['MISSING', 'EXPIRED'].includes(r.status));
+  const pending = reqs.filter((r) => r.status === 'VERIFICATION_REQUIRED');
+
+  const docFor = (r) => fetchedDocs.find((d) => d.keys.includes(r.requirement_key));
+  const usedIds = new Set(reqs.map((r) => docFor(r)?.id).filter(Boolean));
+  const extra = fetchedDocs.filter((d) => !usedIds.has(d.id));
+
+  return (
+    <section className="space-y-3">
+      <h3 className="text-sm font-black text-slate-500 uppercase tracking-wide">{tr('Your documents at a glance', 'आपके दस्तावेज़ एक नज़र में')}</h3>
+
+      {missing.length > 0 ? (
+        <div className="border border-red-200 bg-red-50 rounded-md p-3.5">
+          <div className="flex items-center gap-2 text-red-700 font-black text-sm">
+            <XCircle className="w-4 h-4" /> {tr(`${missing.length} required document${missing.length === 1 ? ' is' : 's are'} missing`, `${missing.length} आवश्यक दस्तावेज़ नहीं हैं`)}
+          </div>
+          <ul className="mt-2 space-y-2">
+            {missing.map((r) => (
+              <li key={r.requirement_key} className="text-sm text-red-900">
+                <span className="font-bold">{r.requirement_name}</span>
+                {r.description && <span className="text-red-800/80"> — {r.description}</span>}
+                <button onClick={() => onMarkPhysical(r.requirement_key)} className="ml-2 text-[11px] font-bold text-gov-navy underline">{tr('I have this', 'मेरे पास है')}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="border border-emerald-200 bg-emerald-50 rounded-md p-3 flex items-center gap-2 text-emerald-800 text-sm font-bold">
+          <CheckCircle2 className="w-4 h-4" /> {tr('You have every document this scheme asks for.', 'इस योजना के लिए सभी आवश्यक दस्तावेज़ आपके पास हैं।')}
+        </div>
+      )}
+
+      {pending.length > 0 && (
+        <div className="border border-amber-200 bg-amber-50 rounded-md p-3 text-sm text-amber-900">
+          <span className="font-bold">{tr('Awaiting verification: ', 'सत्यापन लंबित: ')}</span>{pending.map((r) => r.requirement_name).join(', ')}
+        </div>
+      )}
+
+      {held.length > 0 && (
+        <div>
+          <h4 className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-1.5">{tr('Required — you have these', 'आवश्यक — आपके पास हैं')} ({held.length})</h4>
+          <div className="border border-slate-200 rounded-md divide-y divide-slate-100">
+            {held.map((r) => {
+              const d = docFor(r);
+              return (
+                <div key={r.requirement_key} className="px-3.5 py-2.5 flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold text-slate-800">{r.requirement_name}</div>
+                    {d ? <div className="text-xs text-slate-500">{tr(d.en, d.hi)} · {d.value}</div>
+                      : <div className="text-xs text-slate-400">{tr('Marked as available by you', 'आपके द्वारा उपलब्ध चिह्नित')}</div>}
+                  </div>
+                  {d && <SourceBadge provider={d.provider} />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {extra.length > 0 && (
+        <div>
+          <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5">{tr('Extra — not needed for this scheme', 'अतिरिक्त — इस योजना के लिए आवश्यक नहीं')} ({extra.length})</h4>
+          <div className="border border-slate-200 rounded-md divide-y divide-slate-100 bg-slate-50/50">
+            {extra.map((d) => (
+              <div key={d.id} className="px-3.5 py-2 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-600">{tr(d.en, d.hi)}</div>
+                  <div className="text-xs text-slate-400">{d.value}</div>
+                </div>
+                <SourceBadge provider={d.provider} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function RequirementRow({ r, tr, onMarkPhysical, source }) {
   const meta = REQ_STATUS[r.status] || REQ_STATUS.UNKNOWN;

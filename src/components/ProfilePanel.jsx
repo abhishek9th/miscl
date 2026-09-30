@@ -14,6 +14,8 @@ import { INDIAN_STATES } from '../services/locationService';
 import { ageFromDob } from '../utils/validators';
 import { SCHEMES } from '../data/schemes';
 import { useI18n } from '../i18n';
+import { getFetchedDocs } from '../services/digilockerDemo';
+import SourceBadge from './SourceBadge';
 
 const CATEGORY_LABELS = { general: 'General', obc: 'OBC', sc: 'SC', st: 'ST', ews: 'EWS', minorities: 'Minorities' };
 const GENDER_LABELS = { male: 'Male', female: 'Female', other: 'Other' };
@@ -83,6 +85,7 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
   const [bankAccounts, setBankAccounts] = useState([]);
   const [identity, setIdentity] = useState(null);
   const [documents, setDocuments] = useState([]);
+  const [fetchedDocs, setFetchedDocs] = useState([]);
 
   function formFromProfile(p) {
     return {
@@ -103,6 +106,7 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
     getFamilyMembers().then((v) => active && setFamilyMembers(v));
     getAgricultureProfile().then((v) => active && setAgriculture(v));
     getMyDocuments().then((v) => active && setDocuments(v));
+    getFetchedDocs().then((v) => active && setFetchedDocs(v)).catch(() => {});
     listBankAccounts().then((r) => active && setBankAccounts(r.accounts || [])).catch(() => {});
     getIdentity().then((r) => active && setIdentity(r.identity)).catch(() => {});
     return () => { active = false; };
@@ -408,6 +412,24 @@ export default function ProfilePanel({ profile, photoUrl, onClose, onSignOut, on
               <SectionHeader icon={ShieldCheck}>{tr('Government IDs', 'सरकारी पहचान पत्र')}</SectionHeader>
               {identity.aadhaar_last4 && <Row icon={ShieldCheck} label="Aadhaar" value={`•••• •••• ${identity.aadhaar_last4}`} />}
               {identity.pan_last4 && <Row icon={ShieldCheck} label="PAN" value={`•••••${identity.pan_last4}`} />}
+            </>
+          )}
+
+          {/* ---- Documents fetched via DigiLocker / NeSL (prototype demo data) ---- */}
+          {fetchedDocs.length > 0 && (
+            <>
+              <SectionHeader icon={ShieldCheck}>{tr('DigiLocker & NeSL Documents', 'डिजिलॉकर और NeSL दस्तावेज़')}</SectionHeader>
+              {fetchedDocs.map((d) => (
+                <div key={d.id} className="flex items-center justify-between gap-2 py-2 border-b border-slate-100 last:border-0">
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold text-slate-800">{tr(d.en, d.hi)}</div>
+                    <div className="text-xs text-slate-600">{d.value}</div>
+                    <div className="text-[11px] text-slate-400">{tr('Issued by', 'जारीकर्ता')} {d.issuer}</div>
+                  </div>
+                  <SourceBadge provider={d.provider} />
+                </div>
+              ))}
+              <p className="text-[10px] text-slate-400 mt-1">{tr('Demo data for the prototype — no real DigiLocker or NeSL account is connected.', 'प्रोटोटाइप के लिए डेमो डेटा — कोई वास्तविक डिजिलॉकर या NeSL खाता जुड़ा नहीं है।')}</p>
             </>
           )}
 
