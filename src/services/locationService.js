@@ -33,56 +33,70 @@ export const INDIAN_STATES = [
   { name: "Ladakh", name_hi: "लद्दाख", lang: "hi" }
 ];
 
+
+const norm = (s) => String(s || '').toLowerCase().replace(/&/g, 'and').replace(/\(.*?\)/g, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+function matchState(name) {
+  const n = norm(name);
+  if (!n) return null;
+  return INDIAN_STATES.find((s) => { const m = norm(s.name); return n === m || n.includes(m) || m.includes(n); }) || null;
+}
+
+// Reverse-geocode to an Indian state name. Tries Nominatim, then a second free
+// provider, so one being rate-limited/blocked doesn't break location detection.
+async function reverseGeocodeState(lat, lon) {
+  const attempts = [
+    async () => {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=5&accept-language=en`);
+      if (!r.ok) throw new Error('nominatim ' + r.status);
+      const d = await r.json();
+      return d?.address?.state || d?.address?.region || d?.address?.state_district;
+    },
+    async () => {
+      const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+      if (!r.ok) throw new Error('bigdatacloud ' + r.status);
+      const d = await r.json();
+      return d?.principalSubdivision;
+    },
+  ];
+  for (const attempt of attempts) {
+    try {
+      const st = matchState(await attempt());
+      if (st) return st;
+    } catch { /* try next provider */ }
+  }
+  return null;
+}
+
+// 'granted' | 'denied' | 'prompt' | 'unknown'
+export async function getLocationPermission() {
+  try {
+    if (!navigator.permissions?.query) return 'unknown';
+    return (await navigator.permissions.query({ name: 'geolocation' })).state;
+  } catch { return 'unknown'; }
+}
+
 /**
- * Detect user location using Browser Geolocation API
+ * Detect user location using Browser Geolocation API. Rejects (rather than
+ * guessing a state) if the position or the state can't be determined, so the
+ * caller can fall back to manual selection.
  */
-export async function detectUserLocation() {
+export function detectUserLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error("Geolocation is not supported by your browser."));
+      reject(new Error('Geolocation is not supported by your browser.'));
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        try {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-
-          // Attempt Nominatim reverse geocoding API
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-          );
-          const data = await response.json();
-
-          let stateName = data?.address?.state || data?.address?.region || "Uttar Pradesh";
-          
-          // Match with our standard state list
-          const matchedState = INDIAN_STATES.find(s => 
-            stateName.toLowerCase().includes(s.name.toLowerCase()) || 
-            s.name.toLowerCase().includes(stateName.toLowerCase())
-          ) || INDIAN_STATES.find(s => s.name === "Uttar Pradesh");
-
-          resolve({
-            state: matchedState.name,
-            state_hi: matchedState.name_hi,
-            suggestedLang: matchedState.lang,
-            lat,
-            lon
-          });
-        } catch (err) {
-          // Default fallback state (e.g. Uttar Pradesh)
-          resolve({
-            state: "Uttar Pradesh",
-            state_hi: "उत्तर प्रदेश",
-            suggestedLang: "en"
-          });
-        }
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const st = await reverseGeocodeState(lat, lon);
+        if (!st) { reject(new Error('Could not work out your state from your location.')); return; }
+        resolve({ state: st.name, state_hi: st.name_hi, suggestedLang: st.lang, lat, lon });
       },
-      (error) => {
-        reject(error);
-      },
-      { timeout: 8000, maximumAge: 60000 }
+      (error) => reject(error),
+      { timeout: 15000, maximumAge: 300000 }
     );
   });
 }

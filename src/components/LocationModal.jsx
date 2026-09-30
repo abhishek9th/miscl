@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigation, Search, Check, Building, ShieldCheck, Lock, ArrowRight, X, Info } from 'lucide-react';
-import { detectUserLocation, INDIAN_STATES } from '../services/locationService';
+import { detectUserLocation, getLocationPermission, INDIAN_STATES } from '../services/locationService';
 import { useI18n } from '../i18n';
 
 /* Decorative, stylised India silhouette for the left brand panel (not a precise
@@ -58,6 +58,15 @@ export default function LocationModal({ onLocationGranted, onLocationDenied }) {
       setLoading(false);
     }
   };
+
+  // If the browser already has location permission, detect straight away instead
+  // of making the user click again on every visit/session.
+  useEffect(() => {
+    let active = true;
+    getLocationPermission().then((p) => { if (active && p === 'granted') handleGrantPermission(); });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleConfirmManualState = () => {
     const matchedState = INDIAN_STATES.find((s) => s.name === selectedManualState) || INDIAN_STATES[0];

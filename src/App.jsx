@@ -106,8 +106,11 @@ export default function App() {
     }
     const resume = pendingActionRef.current;
     pendingActionRef.current = null;
+    // Always leave the login screen first; a resumed action (e.g. opening the
+    // profile panel) doesn't change screens itself and would otherwise leave the
+    // user stuck on the login form. Actions that navigate override this.
+    setCurrentScreen('home');
     if (resume) resume();
-    else setCurrentScreen('home');
   };
 
   // App Navigation State
