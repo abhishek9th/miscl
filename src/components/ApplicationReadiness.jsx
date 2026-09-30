@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   CheckCircle2, AlertTriangle, XCircle, HelpCircle, FileText, ExternalLink,
-  MapPin, Loader2, ShieldCheck, ListChecks, Info,
+  MapPin, Loader2, ShieldCheck, ListChecks, Info, UploadCloud,
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { getReadinessReport, findNearbyPartners, markDocumentAvailability } from '../services/readinessService';
 import { detectUserLocation } from '../services/locationService';
 import { getFetchedSources, getFetchedDocs } from '../services/digilockerDemo';
+import { uploadUserDocument } from '../services/profileService';
 import SourceBadge from './SourceBadge';
 
 const RISK_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
@@ -59,6 +60,15 @@ export default function ApplicationReadiness({ scheme }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scheme.id, lang]);
 
+  // Upload a PDF for a missing document, then re-fetch so the score reflects it.
+  // An uploaded file counts as "uploaded — pending verification", not "available",
+  // until it is verified.
+  const uploadDoc = async (documentType, file) => {
+    await uploadUserDocument(documentType, file);
+    const r = await getReadinessReport(scheme.id, lang === 'en' ? 'en' : 'hi');
+    setReport(r);
+  };
+
   const markPhysical = async (documentType) => {
     try {
       await markDocumentAvailability(documentType, 'available_physical');
@@ -90,14 +100,14 @@ export default function ApplicationReadiness({ scheme }) {
       )}
 
       {!loading && report && (
-        <ReadinessBody report={report} tr={tr} onMarkPhysical={markPhysical} sources={sources} fetchedDocs={fetchedDocs}
+        <ReadinessBody report={report} tr={tr} onUpload={uploadDoc} sources={sources} fetchedDocs={fetchedDocs}
           showNearby={showNearby} onOpenNearby={() => setShowNearby(true)} onCloseNearby={() => setShowNearby(false)} />
       )}
     </div>
   );
 }
 
-function ReadinessBody({ report, tr, onMarkPhysical, sources, fetchedDocs, showNearby, onOpenNearby, onCloseNearby }) {
+function ReadinessBody({ report, tr, onUpload, sources, fetchedDocs, showNearby, onOpenNearby, onCloseNearby }) {
   const { eligibility, readiness, results, missing_by_priority: missingByPriority, category_specific: categorySpecific, explanation } = report;
 
   const applicableResults = results.filter((r) => r.applies);
@@ -145,7 +155,7 @@ function ReadinessBody({ report, tr, onMarkPhysical, sources, fetchedDocs, showN
       </section>
 
       {/* DOCUMENTS AT A GLANCE — what you have, what's extra, what's missing */}
-      <DocumentSummary results={results} fetchedDocs={fetchedDocs} tr={tr} onMarkPhysical={onMarkPhysical} />
+      <DocumentSummary results={results} fetchedDocs={fetchedDocs} tr={tr} onUpload={onUpload} />
 
       {/* COMPLETE REQUIREMENT CHECKLIST — every requirement, grouped, each with
           its own individual status (§8/§16/§17). Never sliced or collapsed. */}
@@ -156,7 +166,7 @@ function ReadinessBody({ report, tr, onMarkPhysical, sources, fetchedDocs, showN
             <div key={category}>
               <h4 className="text-xs font-black text-gov-navy uppercase tracking-wider mb-1.5">{tr(category, category)}</h4>
               <div className="border border-slate-200 rounded-md divide-y divide-slate-100">
-                {items.map((r) => <RequirementRow key={r.requirement_key} r={r} tr={tr} onMarkPhysical={onMarkPhysical} source={sources?.[r.requirement_key]} />)}
+                {items.map((r) => <RequirementRow key={r.requirement_key} r={r} tr={tr} onUpload={onUpload} source={sources?.[r.requirement_key]} />)}
               </div>
             </div>
           ))}
@@ -203,7 +213,7 @@ function ReadinessBody({ report, tr, onMarkPhysical, sources, fetchedDocs, showN
 // One requirement row in the complete grouped checklist. Every requirement is
 // rendered with its own individual status — satisfied (incl. via an accepted
 // alternative), missing, not-applicable (with reason), conditional (asks a
-// question), or pending verification. Document requirements offer "I have this".
+// question), or pending verification. Document requirements offer "Upload now".
 const REQ_STATUS = {
   READY: { Icon: CheckCircle2, color: 'text-emerald-600', label_en: 'Available', label_hi: 'उपलब्ध' },
   UPLOADED: { Icon: CheckCircle2, color: 'text-emerald-600', label_en: 'Available', label_hi: 'उपलब्ध' },
@@ -221,7 +231,7 @@ const NON_DOC = ['eligibility', 'personal_information', 'application_specific'];
 //  - needed & held  (with the fetched value / source when we have one)
 //  - missing        (required by the scheme, not held — called out explicitly)
 //  - extra          (fetched documents this scheme doesn't ask for)
-function DocumentSummary({ results, fetchedDocs, tr, onMarkPhysical }) {
+function DocumentSummary({ results, fetchedDocs, tr, onUpload }) {
   const reqs = (results || []).filter((r) => r.applies && !NON_DOC.includes(r.requirement_type));
   if (reqs.length === 0) return null;
   const isHeld = (r) => ['READY', 'UPLOADED', 'ALTERNATIVE_SATISFIED'].includes(r.status);
@@ -247,7 +257,7 @@ function DocumentSummary({ results, fetchedDocs, tr, onMarkPhysical }) {
               <li key={r.requirement_key} className="text-sm text-red-900">
                 <span className="font-bold">{r.requirement_name}</span>
                 {r.description && <span className="text-red-800/80"> — {r.description}</span>}
-                <button onClick={() => onMarkPhysical(r.requirement_key)} className="ml-2 text-[11px] font-bold text-gov-navy underline">{tr('I have this', 'मेरे पास है')}</button>
+                <UploadNow requirementKey={r.requirement_key} onUpload={onUpload} tr={tr} className="ml-2" />
               </li>
             ))}
           </ul>
@@ -305,7 +315,34 @@ function DocumentSummary({ results, fetchedDocs, tr, onMarkPhysical }) {
   );
 }
 
-function RequirementRow({ r, tr, onMarkPhysical, source }) {
+// "Upload now" — opens a file picker (PDF, max 10 MB), uploads it for this
+// requirement and shows any error inline. Replaces the old self-declared
+// "I have this" toggle, which recorded nothing verifiable.
+function UploadNow({ requirementKey, onUpload, tr, className = '' }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const pick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setErr(''); setBusy(true);
+    try { await onUpload(requirementKey, file); }
+    catch (ex) { setErr(ex.message || tr('Upload failed', 'अपलोड विफल')); }
+    finally { setBusy(false); }
+  };
+  return (
+    <span className={`inline-flex flex-col align-middle ${className}`}>
+      <label className={`inline-flex items-center gap-1 text-[11px] font-bold bg-gov-navy text-white rounded px-2.5 py-1 ${busy ? 'opacity-60' : 'cursor-pointer hover:bg-[#083d71]'}`}>
+        {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <UploadCloud className="w-3 h-3" />}
+        {busy ? tr('Uploading…', 'अपलोड हो रहा है…') : tr('Upload now', 'अभी अपलोड करें')}
+        <input type="file" accept="application/pdf,.pdf" className="hidden" disabled={busy} onChange={pick} />
+      </label>
+      {err && <span className="text-[10px] text-red-600 mt-0.5">{err}</span>}
+    </span>
+  );
+}
+
+function RequirementRow({ r, tr, onUpload, source }) {
   const meta = REQ_STATUS[r.status] || REQ_STATUS.UNKNOWN;
   const isDoc = !NON_DOC.includes(r.requirement_type);
   return (
@@ -340,9 +377,7 @@ function RequirementRow({ r, tr, onMarkPhysical, source }) {
         )}
         <div className="flex items-center gap-3 mt-1">
           {isDoc && (r.status === 'MISSING' || r.status === 'EXPIRED') && (
-            <button onClick={() => onMarkPhysical(r.requirement_key)} className="text-[11px] font-bold text-gov-navy hover:underline">
-              {tr('I have this', 'मेरे पास है')}
-            </button>
+            <UploadNow requirementKey={r.requirement_key} onUpload={onUpload} tr={tr} />
           )}
           {r.source_url && (
             <a href={r.source_url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-slate-400 hover:text-gov-navy inline-flex items-center gap-0.5">

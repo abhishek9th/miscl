@@ -189,8 +189,8 @@ export default function ResultsScreen({
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
             {tr(
-              'Matched against the full Government of India myScheme catalogue (4,600+ schemes) using AI-assisted eligibility. Confirm details and apply on the official portal.',
-              'भारत सरकार के पूरे myScheme कैटलॉग (4,600+ योजनाएँ) से AI-सहायता प्राप्त पात्रता के आधार पर मिलान। विवरण की पुष्टि कर आधिकारिक पोर्टल पर आवेदन करें।'
+              'Matched against the Government of India myScheme catalogue (1,200+ schemes with structured criteria, extracted automatically from the official text of each scheme). Not hand-verified — confirm details and apply on the official portal.',
+              'भारत सरकार के myScheme कैटलॉग (1,200+ योजनाओं के संरचित मानदंड, जो हर योजना के आधिकारिक पाठ से स्वचालित रूप से निकाले गए हैं) से मिलान। हाथ से सत्यापित नहीं — विवरण की पुष्टि कर आधिकारिक पोर्टल पर आवेदन करें।'
             )}
           </p>
 

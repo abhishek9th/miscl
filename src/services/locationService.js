@@ -30,7 +30,12 @@ export const INDIAN_STATES = [
   { name: "West Bengal", name_hi: "पश्चिम बंगाल", lang: "bn" },
   { name: "Delhi (NCT)", name_hi: "दिल्ली", lang: "hi" },
   { name: "Jammu & Kashmir", name_hi: "जम्मू और कश्मीर", lang: "ur" },
-  { name: "Ladakh", name_hi: "लद्दाख", lang: "hi" }
+  { name: "Ladakh", name_hi: "लद्दाख", lang: "hi" },
+  { name: "Puducherry", name_hi: "पुडुचेरी", lang: "ta" },
+  { name: "Chandigarh", name_hi: "चंडीगढ़", lang: "hi" },
+  { name: "Lakshadweep", name_hi: "लक्षद्वीप", lang: "ml" },
+  { name: "Andaman & Nicobar Islands", name_hi: "अंडमान और निकोबार द्वीपसमूह", lang: "hi" },
+  { name: "Dadra & Nagar Haveli and Daman & Diu", name_hi: "दादरा और नगर हवेली तथा दमन और दीव", lang: "gu" }
 ];
 
 

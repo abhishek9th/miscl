@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users, Star, ChevronRight, ChevronsRight, Sprout, Landmark, Briefcase } from 'lucide-react';
+import { ArrowRight, Bell, ExternalLink, FileText, Headphones, ShieldCheck, Store, GraduationCap, Settings, Users, Star, ChevronRight, ChevronsRight, Sprout, Landmark, Briefcase, Wallet } from 'lucide-react';
 import { useI18n } from '../i18n';
 import EligibilityDashboard from './EligibilityDashboard';
 
@@ -34,6 +34,7 @@ export default function HomeScreen({
   onOpenScheme,
   onOpenProfile,
   onOpenEligibility,
+  onOpenAdvisor,
 }) {
   const { t, tr, trText } = useI18n();
 
@@ -255,6 +256,21 @@ export default function HomeScreen({
       {session && onOpenScheme && (
         <div className="-mx-3 sm:-mx-4">
           <EligibilityDashboard variant="summary" onSeeMore={onOpenEligibility} onOpenProfile={onOpenProfile} />
+        </div>
+      )}
+
+      {/* FINANCIAL ADVISOR — plans the user's money around the best-fit scheme */}
+      {onOpenAdvisor && (
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-4">
+          <button onClick={onOpenAdvisor}
+            className="w-full text-left border-2 border-gov-navy/20 bg-[#f0f7ff] hover:bg-[#e6f1ff] rounded-lg p-4 sm:p-5 flex items-center gap-4 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-gov-navy text-white flex items-center justify-center shrink-0"><Wallet className="w-6 h-6" /></div>
+            <div className="flex-1 min-w-0">
+              <div className="text-lg font-black text-gov-navy">{tr('Financial Advisor', 'वित्तीय सलाहकार')}</div>
+              <div className="text-sm text-slate-600">{tr('Plan your funding: the best scheme for your situation, your loan, EMI and what you can afford.', 'अपनी फंडिंग की योजना बनाएँ: आपकी स्थिति के लिए सबसे उपयुक्त योजना, ऋण, ईएमआई और आपकी वहन-क्षमता।')}</div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-gov-navy shrink-0" />
+          </button>
         </div>
       )}
 

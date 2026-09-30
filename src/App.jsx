@@ -10,6 +10,7 @@ import ResultsScreen from './components/ResultsScreen';
 import SchemeDetailScreen from './components/SchemeDetailScreen';
 import OfficialSchemesDirectory from './components/OfficialSchemesDirectory';
 import EligibilityDashboard from './components/EligibilityDashboard';
+import FinancialAdvisor from './components/FinancialAdvisor';
 import LoginScreen from './components/LoginScreen';
 import ProfilePanel from './components/ProfilePanel';
 import PolicyModal from './components/PolicyModal';
@@ -309,6 +310,7 @@ export default function App() {
             onOpenScheme={handleOpenSchemeById}
             onOpenProfile={() => { setOpenProfileInEdit(true); setShowProfile(true); }}
             onOpenEligibility={() => setCurrentScreen('eligibility')}
+            onOpenAdvisor={() => requireAuth(() => setCurrentScreen('advisor'))}
           />
         )}
 
@@ -355,6 +357,14 @@ export default function App() {
 
         {currentScreen === 'directory' && (
           <OfficialSchemesDirectory onBack={handleRestart} session={session} onOpenScheme={handleOpenSchemeById} />
+        )}
+
+        {currentScreen === 'advisor' && (
+          <FinancialAdvisor
+            onBack={handleRestart}
+            onOpenScheme={handleOpenSchemeById}
+            onOpenProfile={() => { setOpenProfileInEdit(true); setShowProfile(true); }}
+          />
         )}
 
         {currentScreen === 'eligibility' && (
