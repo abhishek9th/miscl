@@ -249,7 +249,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
                     <Stat label={tr('Total repaid', 'कुल भुगतान')} value={rupee(r.loan.totalRepayment)} />
                   </div>
                   <p className="text-xs text-slate-600">
-                    {tr('Rate', 'दर')}: <b>{r.loan.rate.label}</b>{r.loan.rate.isEstimate ? ` · ${tr('estimate', 'अनुमान')}` : ''} · {r.loan.rate.basis} · {r.loan.tenureMonths} {tr('months', 'महीने')}{r.loan.tenureAssumed ? ` (${tr('assumed', 'मान्य')})` : ''}
+                    {tr('Rate', 'दर')}: <b>{hi ? r.loan.rate.labelHi : r.loan.rate.label}</b>{r.loan.rate.isEstimate ? ` · ${tr('estimate', 'अनुमान')}` : ''} · {hi ? r.loan.rate.basisHi : r.loan.rate.basis} · {r.loan.tenureMonths} {tr('months', 'महीने')}{r.loan.tenureAssumed ? ` (${tr('assumed', 'मान्य')})` : ''}
                   </p>
                   {r.yearlySchedule?.length > 0 && (
                     <div className="overflow-x-auto">
@@ -313,7 +313,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
 
           {result.enablers?.length > 0 && (
             <Section title={tr('Also worth asking about', 'यह भी पूछने लायक')} icon={Info}>
-              {result.enablers.map((e) => <p key={e.scheme_id} className="text-sm text-slate-700"><b>{e.name}:</b> {e.text}</p>)}
+              {result.enablers.map((e) => <p key={e.scheme_id} className="text-sm text-slate-700"><b>{hi ? e.name_hi : e.name}:</b> {hi ? e.text_hi : e.text}</p>)}
             </Section>
           )}
 
@@ -355,7 +355,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
                   <p className="text-[11px] text-slate-500">{tr('These come from myScheme.gov.in with AI-extracted terms. SchemeSetu has not verified them — confirm everything on the official page.', 'ये myScheme.gov.in से एआई-निकाली शर्तों के साथ हैं। SchemeSetu ने इन्हें सत्यापित नहीं किया है — सब कुछ आधिकारिक पेज पर जाँचें।')}</p>
                   {result.possible_catalogue_options.map((o) => (
                     <Item key={o.slug} title={o.name} href={o.official_link}
-                      lines={[o.loan_max ? tr(`Up to ${rupee(o.loan_max)}`, `${rupee(o.loan_max)} तक`) : null, o.rate ? `${tr('Rate', 'दर')} ${o.rate.label}` : tr('Rate not specified', 'दर निर्दिष्ट नहीं')]} />
+                      lines={[o.loan_max ? tr(`Up to ${rupee(o.loan_max)}`, `${rupee(o.loan_max)} तक`) : null, o.rate ? `${tr('Rate', 'दर')} ${hi ? o.rate.labelHi : o.rate.label}` : tr('Rate not specified', 'दर निर्दिष्ट नहीं')]} />
                   ))}
                 </Block>
               )}
@@ -365,7 +365,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
       )}
 
       <div className="text-[11px] text-slate-500 border-t border-slate-200 pt-3 space-y-1">
-        {result.assumptions_text?.map((a, i) => <p key={i}>• {a}</p>)}
+        {result.assumptions_text?.filter((a) => !r?.flags_text?.includes(a)).map((a, i) => <p key={i}>• {a}</p>)}
         <p>• {tr('This is guidance, not financial or legal advice. Confirm current terms with the bank and the official scheme portal before you commit.', 'यह मार्गदर्शन है, वित्तीय या कानूनी सलाह नहीं। प्रतिबद्ध होने से पहले बैंक और आधिकारिक पोर्टल से वर्तमान शर्तें जाँचें।')}</p>
       </div>
     </div>
