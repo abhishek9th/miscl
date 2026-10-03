@@ -106,6 +106,16 @@ export function filterBusinessSchemes(schemes = SCHEMES, criteria = {}) {
     }
   }
 
+  // Rank by how well the scheme covers the requested amount: schemes that fully
+  // cover it first, then the partial matches with the largest assistance first.
+  // Array.sort is stable, so ties keep their original order.
+  if (criteria.financial_need) {
+    pool = [...pool].sort((a, b) => {
+      if (!!a.isPartialMatch !== !!b.isPartialMatch) return a.isPartialMatch ? 1 : -1;
+      return a.isPartialMatch ? (b.max_financial_assistance ?? 0) - (a.max_financial_assistance ?? 0) : 0;
+    });
+  }
+
   return { pool, lastFilteredFactor };
 }
 
