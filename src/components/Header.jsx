@@ -89,7 +89,7 @@ export default function Header({ onGoHome, onOpenDirectory, onOpenProfile, sessi
             </svg>
             <div className="leading-none min-w-0">
               <h1 className="text-[24px] sm:text-[34px] font-extrabold tracking-tight font-sans whitespace-nowrap">
-                <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Setu</span>
+                <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Sahayak</span>
               </h1>
               <p className="mt-1 text-[9px] sm:text-sm font-bold text-slate-600 whitespace-nowrap">
                 {tr('Empowering Future with Government Schemes', 'सरकारी योजनाओं से सशक्त भविष्य')}

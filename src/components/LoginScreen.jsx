@@ -39,7 +39,7 @@ function BrandLogo() {
       </svg>
       <div className="leading-none">
         <h1 className="text-[22px] font-extrabold tracking-tight">
-          <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Setu</span>
+          <span className="text-[#0B3D71]">Scheme</span><span className="text-[#15803D]">Sahayak</span>
         </h1>
         <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{tr('Connecting People to Possibilities', 'लोगों को अवसरों से जोड़ना')}</p>
       </div>
