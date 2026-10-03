@@ -839,7 +839,7 @@ function IdentityStep({ tr, stepIndex, busy, error, onBack, onNext }) {
           <>
             <div className="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
               <Info className="w-4 h-4 mt-0.5 shrink-0" />
-              {tr('Stored encrypted. SchemeSetu does not verify these against government databases — official verification happens on the government portal itself.', 'एन्क्रिप्टेड रूप से संग्रहीत। SchemeSetu इन्हें सरकारी डेटाबेस से सत्यापित नहीं करता — आधिकारिक सत्यापन सरकारी पोर्टल पर ही होता है।')}
+              {tr('Stored encrypted. SchemeSahayak does not verify these against government databases — official verification happens on the government portal itself.', 'एन्क्रिप्टेड रूप से संग्रहीत। SchemeSahayak इन्हें सरकारी डेटाबेस से सत्यापित नहीं करता — आधिकारिक सत्यापन सरकारी पोर्टल पर ही होता है।')}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label={tr('Aadhaar Number', 'आधार संख्या')}><input value={aadhaar} onChange={(e) => setAadhaar(e.target.value.replace(/\D/g, '').slice(0, 12))} inputMode="numeric" className={cls.input} /></Field>
@@ -931,19 +931,19 @@ function ConsentStep({ tr, stepIndex, busy, error, onBack, onFinish, showSensiti
 
   const ITEMS = [
     ['profile_data_storage', tr('Store my profile information', 'मेरी प्रोफ़ाइल जानकारी संग्रहीत करें'),
-      tr('SchemeSetu will securely store the details you provided (name, address, eligibility, etc.) to show you relevant schemes.', 'SchemeSetu आपके द्वारा दी गई जानकारी को सुरक्षित रूप से संग्रहीत करेगा ताकि आपको प्रासंगिक योजनाएँ दिखाई जा सकें।'), true],
+      tr('SchemeSahayak will securely store the details you provided (name, address, eligibility, etc.) to show you relevant schemes.', 'SchemeSahayak आपके द्वारा दी गई जानकारी को सुरक्षित रूप से संग्रहीत करेगा ताकि आपको प्रासंगिक योजनाएँ दिखाई जा सकें।'), true],
     ...(showDocumentConsent ? [['document_storage', tr('Store my uploaded documents', 'मेरे अपलोड किए गए दस्तावेज़ संग्रहीत करें'),
       tr('The documents you uploaded will be kept in your private, encrypted document vault.', 'आपके द्वारा अपलोड किए गए दस्तावेज़ आपके निजी, एन्क्रिप्टेड वॉल्ट में रखे जाएँगे।'), false]] : []),
     ...(showSensitiveConsent ? [['sensitive_data_processing', tr('Process my Aadhaar / PAN / bank details', 'मेरे आधार / पैन / बैंक विवरण संसाधित करें'),
       tr('These are encrypted and used only to auto-fill forms you explicitly submit — never shared without your action.', 'ये एन्क्रिप्टेड हैं और केवल आपके द्वारा स्पष्ट रूप से जमा किए गए फॉर्म को स्वतः भरने के लिए उपयोग होते हैं।'), false]] : []),
-    ['auto_fill', tr('Allow SchemeSetu to auto-fill scheme applications for me', 'SchemeSetu को मेरे लिए योजना आवेदन स्वतः भरने की अनुमति दें'),
+    ['auto_fill', tr('Allow SchemeSahayak to auto-fill scheme applications for me', 'SchemeSahayak को मेरे लिए योजना आवेदन स्वतः भरने की अनुमति दें'),
       tr('Uses your saved profile to pre-fill forms. You always review and approve before anything is submitted.', 'फॉर्म को पहले से भरने के लिए आपकी सहेजी गई प्रोफ़ाइल का उपयोग होता है। कुछ भी जमा करने से पहले आप हमेशा समीक्षा और अनुमोदन करते हैं।'), false],
     ['government_portal_submission', tr('Allow submission to government portals on my behalf, after my review', 'मेरी समीक्षा के बाद मेरी ओर से सरकारी पोर्टल पर जमा करने की अनुमति दें'),
-      tr('SchemeSetu will only submit an application after you have reviewed it and given explicit approval.', 'SchemeSetu केवल आपकी समीक्षा और स्पष्ट अनुमोदन के बाद ही आवेदन जमा करेगा।'), false],
+      tr('SchemeSahayak will only submit an application after you have reviewed it and given explicit approval.', 'SchemeSahayak केवल आपकी समीक्षा और स्पष्ट अनुमोदन के बाद ही आवेदन जमा करेगा।'), false],
   ];
 
   const finish = () => {
-    if (!consents.profile_data_storage) return setLocalError(tr('Storing your profile is required to use SchemeSetu.', 'SchemeSetu का उपयोग करने के लिए प्रोफ़ाइल संग्रहीत करना आवश्यक है।'));
+    if (!consents.profile_data_storage) return setLocalError(tr('Storing your profile is required to use SchemeSahayak.', 'SchemeSahayak का उपयोग करने के लिए प्रोफ़ाइल संग्रहीत करना आवश्यक है।'));
     setLocalError('');
     const decisions = ITEMS.map(([key]) => ({ type: key, version: CONSENT_VERSION, granted: Boolean(consents[key]) }));
     onFinish(decisions);

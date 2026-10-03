@@ -111,7 +111,7 @@ export default function AiAssistantModal({ onClose, onVoiceProfileReady, current
   return <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border-4 border-gov-navy overflow-hidden">
       <div className="bg-gov-navy text-white p-4 flex items-center justify-between border-b-4 border-gov-saffron">
-        <div><h2 className="text-xl font-bold">{isHindi ? 'SchemeSetu वॉइस सहायता' : 'SchemeSetu Voice Assistance'}</h2><p className="text-xs text-amber-200">{isHindi ? 'बोलकर या टाइप करके जानकारी दें' : 'Speak or type your details'}</p></div>
+        <div><h2 className="text-xl font-bold">{isHindi ? 'SchemeSahayak वॉइस सहायता' : 'SchemeSahayak Voice Assistance'}</h2><p className="text-xs text-amber-200">{isHindi ? 'बोलकर या टाइप करके जानकारी दें' : 'Speak or type your details'}</p></div>
         <button onClick={onClose} className="text-white hover:text-amber-300" aria-label="Close"><X /></button>
       </div>
       <div className="p-5 space-y-4">

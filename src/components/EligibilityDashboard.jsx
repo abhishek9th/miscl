@@ -81,7 +81,7 @@ export default function EligibilityDashboard({ variant = 'full', onOpenScheme, o
           <UserCog className="w-6 h-6 text-gov-navy shrink-0" />
           <div>
             <h2 className="font-black text-gov-navy">{tr('Complete your profile to see schemes you can claim', 'आप जो योजनाएँ प्राप्त कर सकते हैं उन्हें देखने के लिए अपनी प्रोफ़ाइल पूरी करें')}</h2>
-            <p className="text-sm text-slate-600 mt-1">{tr('Add your income, category and state so SchemeSetu can check your eligibility automatically.', 'अपनी आय, श्रेणी और राज्य जोड़ें ताकि SchemeSetu स्वतः आपकी पात्रता जाँच सके।')}</p>
+            <p className="text-sm text-slate-600 mt-1">{tr('Add your income, category and state so SchemeSahayak can check your eligibility automatically.', 'अपनी आय, श्रेणी और राज्य जोड़ें ताकि SchemeSahayak स्वतः आपकी पात्रता जाँच सके।')}</p>
             <button onClick={onOpenProfile} className="mt-3 text-gov-navy font-extrabold text-sm hover:underline inline-flex items-center gap-1">
               {tr('Complete profile', 'प्रोफ़ाइल पूरी करें')} <ArrowRight className="w-4 h-4" />
             </button>

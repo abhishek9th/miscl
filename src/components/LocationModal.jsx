@@ -96,7 +96,7 @@ export default function LocationModal({ onLocationGranted, onLocationDenied }) {
                 <path d="M30 31c-8 4-14 4-22 1 7-1 13-5 18-11 3 2 5 6 4 10Z" fill="#4ADE80" />
               </svg>
               <div className="leading-none">
-                <div className="text-xl font-extrabold">SchemeSetu</div>
+                <div className="text-xl font-extrabold">SchemeSahayak</div>
                 <div className="text-[11px] text-blue-100/80 mt-0.5">{tr('Government schemes, for you', 'सरकारी योजनाएँ, आपके लिए')}</div>
               </div>
             </div>

@@ -56,7 +56,7 @@ export default function ResultsScreen({
   const [speaking, setSpeaking] = useState(false);
   const isHindi = currentLang !== 'en';
 
-  // Beyond SchemeSetu's own ~20 verified schemes, match the signed-in user's
+  // Beyond SchemeSahayak's own ~20 verified schemes, match the signed-in user's
   // profile against the FULL myScheme catalogue (4,600+ schemes) using the
   // AI-extracted eligibility criteria. Clearly separated below and never merged
   // with the verified count — these are AI-assisted and must be confirmed on the

@@ -85,8 +85,8 @@ export default function ChatBot({ onVoiceProfileReady, userProfile }) {
   // machine translation arrives a moment later. Showing/speaking that fallback
   // made the bot greet a Tamil user in Hindi, so the greeting is held back until
   // the real translation is available (with a short timeout in case it never is).
-  const GREETING_EN = "Hello! I'm SchemeSetu. What kind of government scheme are you looking for?";
-  const GREETING_HI = 'नमस्ते! मैं SchemeSetu हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?';
+  const GREETING_EN = "Hello! I'm SchemeSahayak. What kind of government scheme are you looking for?";
+  const GREETING_HI = 'नमस्ते! मैं SchemeSahayak हूँ। आपको किस प्रकार की सरकारी योजना की जानकारी चाहिए?';
   const greeting = tr(GREETING_EN, GREETING_HI);
   const greetingPending = currentLang !== 'en' && currentLang !== 'hi' && greeting === GREETING_HI;
   const [greetingTimedOut, setGreetingTimedOut] = useState(false);
@@ -218,7 +218,7 @@ export default function ChatBot({ onVoiceProfileReady, userProfile }) {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0B75C9] to-[#075C9C] text-white p-4 flex items-center justify-between">
         <div>
-          <h3 className="font-black text-lg">{tr('SchemeSetu Help', 'SchemeSetu सहायता')}</h3>
+          <h3 className="font-black text-lg">{tr('SchemeSahayak Help', 'SchemeSahayak सहायता')}</h3>
           <p className="text-xs text-blue-100">{tr('Ask by voice or text', 'बोलकर या लिखकर पूछें')}</p>
         </div>
         <button 

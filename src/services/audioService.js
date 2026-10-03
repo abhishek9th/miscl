@@ -1,7 +1,7 @@
 /**
  * Text-to-Speech (TTS) and Speech-to-Text (STT) Service
  *
- * Covers all 12 languages SchemeSetu's UI supports (src/data/translations.js /
+ * Covers all 12 languages SchemeSahayak's UI supports (src/data/translations.js /
  * translationService.js LANG_NAMES) — not just Hindi/English — for both
  * reading pages aloud and the chatbot's voice replies.
  */
@@ -152,7 +152,7 @@ export function speechLangFor(text, siteLang) {
     if (lang === 'en') { latin = n; continue; }
     if (n > bestCount) { best = lang; bestCount = n; }
   }
-  // A few Latin words (e.g. the brand name "SchemeSetu") must not turn a Tamil/Hindi
+  // A few Latin words (e.g. the brand name "SchemeSahayak") must not turn a Tamil/Hindi
   // sentence into an English one: a native script wins unless Latin clearly dominates.
   if (best && bestCount >= latin * 0.3) return best === 'hi' && siteLang === 'mr' ? 'mr' : best;
   if (latin > 0) return 'en';

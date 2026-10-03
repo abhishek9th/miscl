@@ -7,8 +7,8 @@ import CatalogueSchemeDetail from './CatalogueSchemeDetail';
 
 const PAGE_SIZE = 20;
 
-// Native, searchable directory over SchemeSetu's own myScheme catalogue —
-// every scheme is shown and read INSIDE SchemeSetu (backend/routes/catalogue.js
+// Native, searchable directory over SchemeSahayak's own myScheme catalogue —
+// every scheme is shown and read INSIDE SchemeSahayak (backend/routes/catalogue.js
 // -> public.myscheme_catalogue), never a redirect to the official site.
 export default function OfficialSchemesDirectory({ onBack, session, onOpenScheme }) {
   const { tr, trText } = useI18n();
@@ -76,7 +76,7 @@ export default function OfficialSchemesDirectory({ onBack, session, onOpenScheme
           {tr('All Government of India schemes', 'भारत की सभी सरकारी योजनाएँ')}
         </h2>
         <p className="text-slate-200 text-base leading-relaxed max-w-3xl">
-          {tr('Search every Central, State and Union Territory scheme — shown here on SchemeSetu, sourced from the Government of India’s myScheme platform.', 'हर केंद्रीय, राज्य और केंद्र शासित प्रदेश योजना को यहीं SchemeSetu पर खोजें — जानकारी भारत सरकार के myScheme प्लेटफ़ॉर्म से ली गई है।')}
+          {tr('Search every Central, State and Union Territory scheme — shown here on SchemeSahayak, sourced from the Government of India’s myScheme platform.', 'हर केंद्रीय, राज्य और केंद्र शासित प्रदेश योजना को यहीं SchemeSahayak पर खोजें — जानकारी भारत सरकार के myScheme प्लेटफ़ॉर्म से ली गई है।')}
         </p>
       </section>
 

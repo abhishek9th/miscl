@@ -6,7 +6,7 @@ import {
 import { useI18n } from '../i18n';
 import { uploadUserDocument, getMyDocuments } from '../services/profileService';
 
-// The documents SchemeSetu asks a new user to store for future applications.
+// The documents SchemeSahayak asks a new user to store for future applications.
 // document_type values match the user_documents table / journey document matcher.
 const DOC_TYPES = [
   { type: 'aadhaar', en: 'Aadhaar Card', hi: 'आधार कार्ड' },
@@ -53,8 +53,8 @@ function Intro({ tr, onCreate, onSkip }) {
       <h1 className="text-2xl sm:text-3xl font-black text-gov-navy">{tr('Create a profile for future use', 'भविष्य के उपयोग के लिए प्रोफ़ाइल बनाएँ')}</h1>
       <p className="mt-3 text-slate-600 leading-relaxed max-w-lg mx-auto">
         {tr(
-          'Save your certificates once and SchemeSetu will auto-attach them to future scheme applications — so you never have to hunt for documents again.',
-          'अपने प्रमाण पत्र एक बार सहेजें और SchemeSetu उन्हें भविष्य की योजना आवेदनों में स्वतः संलग्न कर देगा — ताकि आपको दोबारा दस्तावेज़ न ढूँढने पड़ें।'
+          'Save your certificates once and SchemeSahayak will auto-attach them to future scheme applications — so you never have to hunt for documents again.',
+          'अपने प्रमाण पत्र एक बार सहेजें और SchemeSahayak उन्हें भविष्य की योजना आवेदनों में स्वतः संलग्न कर देगा — ताकि आपको दोबारा दस्तावेज़ न ढूँढने पड़ें।'
         )}
       </p>
       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">

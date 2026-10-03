@@ -88,8 +88,8 @@ export default function FinancialAdvisor({ onBack, onOpenScheme, onOpenProfile }
         <div>
           <h1 className="text-2xl font-black text-gov-navy">{tr('Financial Advisor', 'वित्तीय सलाहकार')}</h1>
           <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-            {tr('Tell us about your business and money. SchemeSetu checks the schemes you qualify for, works out the numbers, and recommends the one that gives you the most government support you can comfortably afford.',
-              'अपने व्यवसाय और आर्थिक स्थिति के बारे में बताएँ। SchemeSetu उन योजनाओं की जाँच करता है जिनके आप पात्र हैं, गणना करता है और वह योजना सुझाता है जो आपकी वहन-क्षमता के भीतर सबसे अधिक सरकारी सहायता दे।')}
+            {tr('Tell us about your business and money. SchemeSahayak checks the schemes you qualify for, works out the numbers, and recommends the one that gives you the most government support you can comfortably afford.',
+              'अपने व्यवसाय और आर्थिक स्थिति के बारे में बताएँ। SchemeSahayak उन योजनाओं की जाँच करता है जिनके आप पात्र हैं, गणना करता है और वह योजना सुझाता है जो आपकी वहन-क्षमता के भीतर सबसे अधिक सरकारी सहायता दे।')}
           </p>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function FinancialAdvisor({ onBack, onOpenScheme, onOpenProfile }
           </Field>
           <Field label={tr('Repayment period (optional)', 'चुकौती अवधि (वैकल्पिक)')}>
             <select value={form.tenureMonths} onChange={set('tenureMonths')} className={inputCls}>
-              <option value="">{tr('Let SchemeSetu assume', 'SchemeSetu मान ले')}</option>
+              <option value="">{tr('Let SchemeSahayak assume', 'SchemeSahayak मान ले')}</option>
               {TENURES.map((m) => <option key={m} value={m}>{m} {tr('months', 'महीने')} ({m / 12} {tr('yrs', 'वर्ष')})</option>)}
             </select>
           </Field>
@@ -190,7 +190,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
 
   return (
     <div id="advisor-result" className="space-y-4">
-      {/* Explanation — words only; every figure below is calculated by SchemeSetu */}
+      {/* Explanation — words only; every figure below is calculated by SchemeSahayak */}
       <div className={`rounded-md border p-5 ${r ? 'bg-[#f0f7ff] border-blue-200' : 'bg-amber-50 border-amber-200'}`}>
         <div className="flex items-start gap-2">
           {r ? <CheckCircle2 className="w-6 h-6 text-blue-700 shrink-0" /> : <AlertTriangle className="w-6 h-6 text-amber-700 shrink-0" />}
@@ -203,8 +203,8 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
         <p className="mt-3 text-[11px] text-slate-500 flex items-center gap-1">
           <ShieldCheck className="w-3.5 h-3.5" />
           {ex.source === 'ai'
-            ? tr('The wording is AI-written; every rupee figure and the scheme choice are calculated by SchemeSetu, and figures the calculator did not produce are rejected.', 'शब्दावली एआई द्वारा लिखी गई है; हर रुपये का आँकड़ा और योजना का चयन SchemeSetu की गणना से है, और जो आँकड़े गणना से नहीं आए वे अस्वीकार कर दिए जाते हैं।')
-            : tr('Every figure and the scheme choice are calculated by SchemeSetu.', 'हर आँकड़ा और योजना का चयन SchemeSetu द्वारा गणना किया गया है।')}
+            ? tr('The wording is AI-written; every rupee figure and the scheme choice are calculated by SchemeSahayak, and figures the calculator did not produce are rejected.', 'शब्दावली एआई द्वारा लिखी गई है; हर रुपये का आँकड़ा और योजना का चयन SchemeSahayak की गणना से है, और जो आँकड़े गणना से नहीं आए वे अस्वीकार कर दिए जाते हैं।')
+            : tr('Every figure and the scheme choice are calculated by SchemeSahayak.', 'हर आँकड़ा और योजना का चयन SchemeSahayak द्वारा गणना किया गया है।')}
         </p>
       </div>
 
@@ -265,8 +265,8 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
               ) : (
                 <div className="rounded-md bg-amber-50 border border-amber-200 p-3.5 space-y-2.5">
                   <p className="text-sm text-amber-900">
-                    {tr(`The bank sets the interest rate for this scheme, so SchemeSetu will not guess your EMI. The loan would be ${rupee(r.loan.principal)} over ${r.loan.tenureMonths} months.`,
-                      `इस योजना की ब्याज दर बैंक तय करता है, इसलिए SchemeSetu ईएमआई का अनुमान नहीं लगाएगा। ऋण ${rupee(r.loan.principal)} होगा, ${r.loan.tenureMonths} महीनों के लिए।`)}
+                    {tr(`The bank sets the interest rate for this scheme, so SchemeSahayak will not guess your EMI. The loan would be ${rupee(r.loan.principal)} over ${r.loan.tenureMonths} months.`,
+                      `इस योजना की ब्याज दर बैंक तय करता है, इसलिए SchemeSahayak ईएमआई का अनुमान नहीं लगाएगा। ऋण ${rupee(r.loan.principal)} होगा, ${r.loan.tenureMonths} महीनों के लिए।`)}
                   </p>
                   {r.loan.affordableUpToRate != null && (
                     <p className="text-sm font-bold text-amber-900">
@@ -352,7 +352,7 @@ function Result({ result, tr, onOpenScheme, onOpenProfile, onRecalc, loading }) 
               {result.excluded?.length > 0 && <Block title={tr('Not a fit', 'उपयुक्त नहीं')}>{result.excluded.map((b) => <Item key={b.scheme_id} title={name(b)} lines={b.reasons_text} />)}</Block>}
               {result.possible_catalogue_options?.length > 0 && (
                 <Block title={tr('Other loan schemes to check (unverified)', 'जाँचने योग्य अन्य ऋण योजनाएँ (असत्यापित)')}>
-                  <p className="text-[11px] text-slate-500">{tr('These come from myScheme.gov.in with AI-extracted terms. SchemeSetu has not verified them — confirm everything on the official page.', 'ये myScheme.gov.in से एआई-निकाली शर्तों के साथ हैं। SchemeSetu ने इन्हें सत्यापित नहीं किया है — सब कुछ आधिकारिक पेज पर जाँचें।')}</p>
+                  <p className="text-[11px] text-slate-500">{tr('These come from myScheme.gov.in with AI-extracted terms. SchemeSahayak has not verified them — confirm everything on the official page.', 'ये myScheme.gov.in से एआई-निकाली शर्तों के साथ हैं। SchemeSahayak ने इन्हें सत्यापित नहीं किया है — सब कुछ आधिकारिक पेज पर जाँचें।')}</p>
                   {result.possible_catalogue_options.map((o) => (
                     <Item key={o.slug} title={o.name} href={o.official_link}
                       lines={[o.loan_max ? tr(`Up to ${rupee(o.loan_max)}`, `${rupee(o.loan_max)} तक`) : null, o.rate ? `${tr('Rate', 'दर')} ${hi ? o.rate.labelHi : o.rate.label}` : tr('Rate not specified', 'दर निर्दिष्ट नहीं')]} />

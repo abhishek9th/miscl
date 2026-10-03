@@ -467,7 +467,7 @@ export default function App() {
         <div className="bg-[#071629] py-3 px-4 text-[11px] text-slate-400 border-t border-slate-800">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
             <div>
-              © 2024 SchemeSetu India. {tr('Government of India. All rights reserved.', 'भारत सरकार. सभी अधिकार सुरक्षित।')}
+              © 2024 SchemeSahayak India. {tr('Government of India. All rights reserved.', 'भारत सरकार. सभी अधिकार सुरक्षित।')}
             </div>
             <div className="flex items-center gap-3 font-semibold">
               <button onClick={() => setPolicyType('accessibility')} className="hover:text-white">{tr('Accessibility', 'सुलभता')}</button>

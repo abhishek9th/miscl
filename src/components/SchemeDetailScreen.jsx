@@ -50,7 +50,7 @@ function describeEligibility(scheme, criteria, tr, trText) {
 }
 
 // Draggable swipe control: drag the knob LEFT to open the official website,
-// RIGHT to start the guided SchemeSetu auto-fill. Works with touch and mouse
+// RIGHT to start the guided SchemeSahayak auto-fill. Works with touch and mouse
 // via pointer events. Snaps back to centre if released before the threshold.
 function SwipeToAct({ tr, canLeft, onLeft, onRight, leftLabel, rightLabel }) {
   const trackRef = useRef(null);
@@ -102,7 +102,7 @@ function SwipeToAct({ tr, canLeft, onLeft, onRight, leftLabel, rightLabel }) {
           <GripHorizontal className="w-6 h-6" />
         </div>
       </div>
-      <p className="mt-2 text-center text-[11px] text-slate-500">{tr('← Slide to the official website  •  Slide to auto-fill with SchemeSetu →', '← आधिकारिक वेबसाइट के लिए बाएँ  •  SchemeSetu से स्वतः भरने के लिए दाएँ →')}</p>
+      <p className="mt-2 text-center text-[11px] text-slate-500">{tr('← Slide to the official website  •  Slide to auto-fill with SchemeSahayak →', '← आधिकारिक वेबसाइट के लिए बाएँ  •  SchemeSahayak से स्वतः भरने के लिए दाएँ →')}</p>
     </div>
   );
 }
@@ -233,7 +233,7 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
         <div className="shrink-0 w-11 h-11 rounded-full bg-slate-100 text-gov-navy flex items-center justify-center"><ClipboardList className="w-6 h-6" /></div>
         <div className="flex-1">
           <h2 className="text-lg sm:text-xl font-black text-gov-navy">{tr('Application Readiness & Document Checker', 'आवेदन तैयारी एवं दस्तावेज़ जाँच')}</h2>
-          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSetu compares your saved profile against this scheme’s verified requirements and tells you exactly what’s ready, what’s missing, and what could delay your application — before you visit the portal or a Jan Seva Kendra.', 'SchemeSetu आपकी सहेजी गई प्रोफ़ाइल की तुलना इस योजना की सत्यापित आवश्यकताओं से करता है और बताता है कि क्या तैयार है, क्या छूट रहा है, और आपके आवेदन में देरी क्या कर सकती है।')}</p>
+          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSahayak compares your saved profile against this scheme’s verified requirements and tells you exactly what’s ready, what’s missing, and what could delay your application — before you visit the portal or a Jan Seva Kendra.', 'SchemeSahayak आपकी सहेजी गई प्रोफ़ाइल की तुलना इस योजना की सत्यापित आवश्यकताओं से करता है और बताता है कि क्या तैयार है, क्या छूट रहा है, और आपके आवेदन में देरी क्या कर सकती है।')}</p>
           <SchemeConflictNotice schemeId={scheme.id} />
           <div className="mt-4 border-t border-slate-200 pt-4">
             <ApplicationReadiness scheme={scheme} />
@@ -245,8 +245,8 @@ export default function SchemeDetailScreen({ scheme, userCriteria = {}, userLoca
     <section className="mt-5 bg-[#f5f8ff] border border-blue-200 rounded-lg p-5 no-print">
       <button onClick={() => setShowJourney(true)} className="flex items-start gap-3 w-full text-left group">
         <div className="flex-1">
-          <h2 className="text-lg sm:text-xl font-black text-gov-navy group-hover:underline">{tr('Apply with SchemeSetu (guided)', 'SchemeSetu के साथ आवेदन करें (निर्देशित)')}</h2>
-          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSetu auto-fills what it already knows, asks only for what is missing, and pauses for OTP and your approval. You stay in control of every security step.', 'SchemeSetu वह जानकारी अपने आप भरता है जो उसे पहले से पता है, केवल छूटी हुई जानकारी पूछता है, और ओटीपी व आपकी स्वीकृति के लिए रुकता है। हर सुरक्षा चरण आपके नियंत्रण में रहता है।')}</p>
+          <h2 className="text-lg sm:text-xl font-black text-gov-navy group-hover:underline">{tr('Apply with SchemeSahayak (guided)', 'SchemeSahayak के साथ आवेदन करें (निर्देशित)')}</h2>
+          <p className="mt-1 text-sm text-slate-600 leading-relaxed">{tr('SchemeSahayak auto-fills what it already knows, asks only for what is missing, and pauses for OTP and your approval. You stay in control of every security step.', 'SchemeSahayak वह जानकारी अपने आप भरता है जो उसे पहले से पता है, केवल छूटी हुई जानकारी पूछता है, और ओटीपी व आपकी स्वीकृति के लिए रुकता है। हर सुरक्षा चरण आपके नियंत्रण में रहता है।')}</p>
           <p className="mt-2 text-[11px] text-slate-500">{tr('Runs on a demonstration portal. For a real submission, use the official website below.', 'यह प्रदर्शन पोर्टल पर चलता है। वास्तविक आवेदन के लिए नीचे दी गई आधिकारिक वेबसाइट का उपयोग करें।')}</p>
         </div>
       </button>

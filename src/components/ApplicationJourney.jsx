@@ -297,7 +297,7 @@ function PendingStep({ pending, tr, busy, value, setValue, consent, setConsent, 
   if (type === 'CAPTCHA') {
     return (
       <Wrap icon={ShieldCheck}>
-        <p className="text-xs text-slate-500 mb-3">{tr('Complete the verification on the portal, then continue. SchemeSetu never bypasses CAPTCHA.', 'पोर्टल पर सत्यापन पूरा करें, फिर जारी रखें। SchemeSetu कभी CAPTCHA बायपास नहीं करता।')}</p>
+        <p className="text-xs text-slate-500 mb-3">{tr('Complete the verification on the portal, then continue. SchemeSahayak never bypasses CAPTCHA.', 'पोर्टल पर सत्यापन पूरा करें, फिर जारी रखें। SchemeSahayak कभी CAPTCHA बायपास नहीं करता।')}</p>
         <ContinueBtn tr={tr} busy={busy} label={tr('I have completed it', 'मैंने इसे पूरा कर लिया')} onClick={() => onSubmit('completed')} />
       </Wrap>
     );

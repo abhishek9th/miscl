@@ -74,7 +74,7 @@ export default function Header({ onGoHome, onOpenDirectory, onOpenProfile, sessi
           <button 
             onClick={onGoHome}
             className="flex items-center gap-3 text-left group focus:outline-none"
-            aria-label="SchemeSetu Home"
+            aria-label="SchemeSahayak Home"
           >
             <svg
               viewBox="0 0 82 70"

@@ -89,7 +89,7 @@ export default function ApplicationReadiness({ scheme }) {
       {!loading && error && errorCode === 'REQUIREMENTS_NOT_AVAILABLE' && (
         <div className="flex items-start gap-2 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-md p-3.5">
           <Info className="w-4 h-4 mt-0.5 shrink-0 text-slate-400" />
-          <span>{tr('SchemeSetu hasn’t mapped this scheme’s exact document checklist yet, so a readiness score isn’t available here. Check the official portal (below) for its full eligibility and document requirements.', 'SchemeSetu ने अभी इस योजना की सटीक दस्तावेज़ सूची तैयार नहीं की है, इसलिए यहाँ तैयारी स्कोर उपलब्ध नहीं है। पूर्ण पात्रता व दस्तावेज़ आवश्यकताओं के लिए कृपया नीचे दिए गए आधिकारिक पोर्टल पर देखें।')}</span>
+          <span>{tr('SchemeSahayak hasn’t mapped this scheme’s exact document checklist yet, so a readiness score isn’t available here. Check the official portal (below) for its full eligibility and document requirements.', 'SchemeSahayak ने अभी इस योजना की सटीक दस्तावेज़ सूची तैयार नहीं की है, इसलिए यहाँ तैयारी स्कोर उपलब्ध नहीं है। पूर्ण पात्रता व दस्तावेज़ आवश्यकताओं के लिए कृपया नीचे दिए गए आधिकारिक पोर्टल पर देखें।')}</span>
         </div>
       )}
 
@@ -116,7 +116,7 @@ function ReadinessBody({ report, tr, onUpload, sources, fetchedDocs, showNearby,
   const eligibilityLabel = {
     ELIGIBLE: { text: tr('You appear eligible', 'आप पात्र प्रतीत होते हैं'), color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', Icon: CheckCircle2 },
     NOT_ELIGIBLE: { text: tr('You do not appear to meet basic eligibility', 'आप बुनियादी पात्रता को पूरा नहीं करते प्रतीत होते'), color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', Icon: XCircle },
-    UNKNOWN: { text: tr('SchemeSetu could not fully determine your eligibility', 'SchemeSetu आपकी पात्रता पूरी तरह निर्धारित नहीं कर सका'), color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200', Icon: HelpCircle },
+    UNKNOWN: { text: tr('SchemeSahayak could not fully determine your eligibility', 'SchemeSahayak आपकी पात्रता पूरी तरह निर्धारित नहीं कर सका'), color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200', Icon: HelpCircle },
   }[eligibility.status] || {};
 
   return (
@@ -407,7 +407,7 @@ function SourceLine({ item, tr }) {
 const CENTER_TYPE_LABEL = {
   'CSC': { en: 'Common Service Centre (CSC)', hi: 'सामान्य सेवा केंद्र (CSC)' },
   'Jan Seva Kendra': { en: 'Jan Seva Kendra', hi: 'जन सेवा केंद्र' },
-  'SchemeSetu Partner': { en: 'SchemeSetu Partner', hi: 'SchemeSetu पार्टनर' },
+  'SchemeSahayak Partner': { en: 'SchemeSahayak Partner', hi: 'SchemeSahayak पार्टनर' },
   'Government Service Center': { en: 'Government Service Center', hi: 'सरकारी सेवा केंद्र' },
   'Private Assistance Center': { en: 'Private Assistance Center', hi: 'निजी सहायता केंद्र' },
 };
@@ -451,7 +451,7 @@ function NearbyAssistance({ tr, onClose }) {
       {status === 'error' && <p className="text-sm text-red-600">{errorMsg}</p>}
       {status === 'done' && centers.length === 0 && (
         <div className="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-md p-3.5">
-          {tr('SchemeSetu does not have a verified assistance center listed near you yet. You can visit your nearest government-recognised CSC or Jan Seva Kendra to complete your application.', 'SchemeSetu के पास आपके पास अभी तक कोई सत्यापित सहायता केंद्र सूचीबद्ध नहीं है। आप अपना आवेदन पूरा करने के लिए निकटतम सरकारी मान्यता प्राप्त CSC या जन सेवा केंद्र पर जा सकते हैं।')}
+          {tr('SchemeSahayak does not have a verified assistance center listed near you yet. You can visit your nearest government-recognised CSC or Jan Seva Kendra to complete your application.', 'SchemeSahayak के पास आपके पास अभी तक कोई सत्यापित सहायता केंद्र सूचीबद्ध नहीं है। आप अपना आवेदन पूरा करने के लिए निकटतम सरकारी मान्यता प्राप्त CSC या जन सेवा केंद्र पर जा सकते हैं।')}
         </div>
       )}
       {status === 'done' && centers.length > 0 && (

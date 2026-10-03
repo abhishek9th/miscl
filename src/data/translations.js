@@ -15,7 +15,7 @@ export const LANGUAGES = [
 
 export const TRANSLATIONS = {
   en: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "Find the right government support",
     govt_top_bar: "Government of India Portal | Direct Support",
     free_accessible: "100% Free & Accessible",
@@ -104,7 +104,7 @@ export const TRANSLATIONS = {
   },
 
   hi: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "सही सरकारी योजना खोजें",
     govt_top_bar: "भारत सरकार का सेवा सेतु पोर्टल | Direct Support",
     free_accessible: "100% नि:शुल्क एवं सुगम",
@@ -186,7 +186,7 @@ export const TRANSLATIONS = {
   },
 
   ml: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "ശരിയായ സർക്കാർ ആനുകൂല്യങ്ങൾ കണ്ടെത്തുക",
     govt_top_bar: "ഭാരത സർക്കാർ സേവന സേതു പോർട്ടൽ",
     free_accessible: "100% സൗജന്യവും ലളിതവും",
@@ -268,7 +268,7 @@ export const TRANSLATIONS = {
   },
 
   pa: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "ਹੀ ਸਰਕਾਰੀ ਯੋਜਨਾ ਲੱਭੋ",
     govt_top_bar: "ਭਾਰਤ ਸਰਕਾਰ ਦਾ ਸੇਵਾ ਸੇਤੂ ਪੋਰਟਲ",
     free_accessible: "100% ਮੁਫ਼ਤ ਅਤੇ ਸਰਲ",
@@ -350,7 +350,7 @@ export const TRANSLATIONS = {
   },
 
   bn: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "সঠিক সরকারি প্রকল্প খুঁজুন",
     govt_top_bar: "ভারত সরকার সেবা সেতু পোর্টাল",
     free_accessible: "১০০% বিনামূল্যে ও সহজ",
@@ -432,7 +432,7 @@ export const TRANSLATIONS = {
   },
 
   ta: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "சரியான அரசு திட்டங்களை கண்டறியவும்",
     govt_top_bar: "இந்திய அரசு சேவை சேது போர்ட்டல்",
     free_accessible: "100% இலவசம் மற்றும் எளிதானது",
@@ -514,7 +514,7 @@ export const TRANSLATIONS = {
   },
 
   te: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "సరైన ప్రభుత్వ పథకాలను కనుగొనండి",
     govt_top_bar: "భారత ప్రభుత్వం సేవ సేతు పోర్టల్",
     free_accessible: "100% ఉచితం మరియు సులభం",
@@ -596,7 +596,7 @@ export const TRANSLATIONS = {
   },
 
   mr: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "योग्य सरकारी योजना शोधा",
     govt_top_bar: "भारत सरकार सेवा सेतू पोर्टल",
     free_accessible: "100% मोफत आणि सोपे",
@@ -678,7 +678,7 @@ export const TRANSLATIONS = {
   },
 
   gu: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "સાચી સરકારી યોજનાઓ શોધો",
     govt_top_bar: "ભારત સરકાર સેવા સેતુ પોર્ટલ",
     free_accessible: "100% મફત અને સરળ",
@@ -760,7 +760,7 @@ export const TRANSLATIONS = {
   },
 
   kn: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "ಸೂಕ್ತ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಕಂಡುಕೊಳ್ಳಿ",
     govt_top_bar: "ಭಾರತ ಸರ್ಕಾರ ಸೇವಾ ಸೇತು ಪೋರ್ಟಲ್",
     free_accessible: "100% ಉಚಿತ ಮತ್ತು ಸರಳ",
@@ -842,7 +842,7 @@ export const TRANSLATIONS = {
   },
 
   or: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "সঠিক সরকারি যোজନା ଖୋଜନ୍ତୁ",
     govt_top_bar: "ଭାରତ ସରକାର ସେବା ସେତୁ ପୋର୍ଟାଲ",
     free_accessible: "100% ମାଗଣା ଏବଂ ସହଜ",
@@ -924,7 +924,7 @@ export const TRANSLATIONS = {
   },
 
   ur: {
-    app_title: "SchemeSetu",
+    app_title: "SchemeSahayak",
     app_subtitle: "صحیح سرکاری اسکیم تلاش کریں",
     govt_top_bar: "حکومت ہند پورٹل | براہ راست مدد",
     free_accessible: "100% مفت اور آسان",

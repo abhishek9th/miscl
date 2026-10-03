@@ -734,7 +734,7 @@ function RegisterView({ onAuthed, onBackToLogin }) {
     mobile: [tr('Create your account', 'अपना खाता बनाएँ'), tr('We’ll send a one-time OTP to verify your number', 'आपके नंबर को सत्यापित करने के लिए हम एक ओटीपी भेजेंगे')],
     otp: [tr('Verify your mobile', 'अपना मोबाइल सत्यापित करें'), `${tr('Enter the code sent to', 'इस नंबर पर भेजा गया कोड दर्ज करें')} +91 ${mobile}`],
     details: [tr('Set up your account', 'अपना खाता सेट करें'), tr('Create a secure account to access your personalized dashboard.', 'अपने व्यक्तिगत डैशबोर्ड तक पहुँचने के लिए एक सुरक्षित खाता बनाएँ।')],
-    connect: [tr('Connect DigiLocker & NeSL', 'डिजिलॉकर और NeSL जोड़ें'), tr('Authenticate once so SchemeSetu can fetch your documents automatically.', 'एक बार प्रमाणित करें ताकि SchemeSetu आपके दस्तावेज़ स्वतः प्राप्त कर सके।')],
+    connect: [tr('Connect DigiLocker & NeSL', 'डिजिलॉकर और NeSL जोड़ें'), tr('Authenticate once so SchemeSahayak can fetch your documents automatically.', 'एक बार प्रमाणित करें ताकि SchemeSahayak आपके दस्तावेज़ स्वतः प्राप्त कर सके।')],
     photo: [tr('Add your photo & details', 'अपनी फ़ोटो और विवरण जोड़ें'), tr('A live photo is required; other details are optional.', 'एक लाइव फ़ोटो आवश्यक है; अन्य विवरण वैकल्पिक हैं।')],
   };
 

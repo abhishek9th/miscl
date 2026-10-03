@@ -1,6 +1,6 @@
 /**
  * Native browse/search over the full myscheme.gov.in catalogue, served from
- * SchemeSetu's own backend (public.myscheme_catalogue) — never a redirect to
+ * SchemeSahayak's own backend (public.myscheme_catalogue) — never a redirect to
  * the official site. Every scheme here was scraped from the government's own
  * platform, not AI-generated (see backend/scripts/scrapeSchemeIndex.mjs).
  */

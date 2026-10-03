@@ -124,7 +124,7 @@ export default function CatalogueSchemeDetail({ slug, onBack }) {
           <h3 className="flex items-center gap-2 text-lg font-extrabold text-gov-navy">
             <ClipboardList className="w-5 h-5 text-gov-saffron" /> {tr('Your application readiness', 'आपकी आवेदन तैयारी')}
           </h3>
-          <p className="text-xs text-slate-500 mb-1">{tr('SchemeSetu checks each requirement of this scheme against your profile and documents.', 'SchemeSetu इस योजना की हर आवश्यकता की तुलना आपकी प्रोफ़ाइल और दस्तावेज़ों से करता है।')}</p>
+          <p className="text-xs text-slate-500 mb-1">{tr('SchemeSahayak checks each requirement of this scheme against your profile and documents.', 'SchemeSahayak इस योजना की हर आवश्यकता की तुलना आपकी प्रोफ़ाइल और दस्तावेज़ों से करता है।')}</p>
           <ApplicationReadiness scheme={{ id: slug, name: scheme.name, name_hi: scheme.name }} />
         </section>
       )}

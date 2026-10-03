@@ -47,7 +47,7 @@ export default function SchemeConflictNotice({ schemeId }) {
       <p className="mt-1 text-sm font-semibold">
         {blocking
           ? tr('An existing benefit conflicts with this scheme according to the official rules.', 'आधिकारिक नियमों के अनुसार आपका मौजूदा लाभ इस योजना से टकराता है।')
-          : tr('An existing scheme may overlap with this one. SchemeSetu could not confirm this with certainty — verify the combination rule before applying.', 'आपकी एक मौजूदा योजना इससे टकरा सकती है। SchemeSetu निश्चितता से इसकी पुष्टि नहीं कर सका — आवेदन से पहले नियम जाँच लें।')}
+          : tr('An existing scheme may overlap with this one. SchemeSahayak could not confirm this with certainty — verify the combination rule before applying.', 'आपकी एक मौजूदा योजना इससे टकरा सकती है। SchemeSahayak निश्चितता से इसकी पुष्टि नहीं कर सका — आवेदन से पहले नियम जाँच लें।')}
       </p>
 
       {data.count > 1 && (

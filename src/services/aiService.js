@@ -1,5 +1,5 @@
 /**
- * AI Assistant Service for SchemeSetu
+ * AI Assistant Service for SchemeSahayak
  * Sends text only to the app backend. The Groq key never enters the browser bundle.
  */
 
@@ -58,7 +58,7 @@ export async function processNaturalLanguageQuery(queryText, currentProfile = {}
   throw lastError || new Error('Profile analysis unavailable');
 }
 
-// Additional real government schemes beyond SchemeSetu's own small structured
+// Additional real government schemes beyond SchemeSahayak's own small structured
 // catalogue — clearly AI-suggested, never treated as verified. Fails soft
 // (returns []) since this is a supplementary, non-critical enhancement.
 export async function suggestAdditionalSchemes(criteria, alreadyShownIds = [], language = 'hi') {
