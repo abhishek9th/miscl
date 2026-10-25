@@ -635,11 +635,6 @@ function RegisterView({ onAuthed, onBackToLogin }) {
     setLinked((l) => ({ ...l, [provider]: true }));
     setLinking('');
   };
-  const doConnect = go(async () => {
-    if (!linked.digilocker || !linked.nesl) throw new Error(tr('Please authenticate both DigiLocker and NeSL to continue', 'आगे बढ़ने के लिए कृपया डिजिलॉकर और NeSL दोनों को प्रमाणित करें'));
-    setStep('photo');
-  });
-
   useEffect(() => { if (isOtpWidgetConfigured) loadOtpWidget().catch(() => {}); }, []);
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -659,6 +654,11 @@ function RegisterView({ onAuthed, onBackToLogin }) {
     }
     finally { setLoading(false); }
   };
+
+  const doConnect = go(async () => {
+    if (!linked.digilocker || !linked.nesl) throw new Error(tr('Please authenticate both DigiLocker and NeSL to continue', 'आगे बढ़ने के लिए कृपया डिजिलॉकर और NeSL दोनों को प्रमाणित करें'));
+    setStep('photo');
+  });
 
   const doSendOtp = go(async () => {
     if (!/^\d{10}$/.test(mobile.trim())) throw new Error(tr('Please enter a valid 10-digit mobile number', 'कृपया एक मान्य 10-अंकीय मोबाइल नंबर दर्ज करें'));
